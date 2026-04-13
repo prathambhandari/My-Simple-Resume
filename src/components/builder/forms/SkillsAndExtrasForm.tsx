@@ -105,7 +105,7 @@ export function SkillsAndExtrasForm() {
               {skillFields.map((field, index) => (
                 <div key={field.id} className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 p-2 rounded-lg">
                   <Input 
-                    placeholder="E.g. React.js" 
+                    placeholder="React.js" 
                     className="w-40 h-8 text-sm"
                     {...form.register(`skills.${index}.name`)} 
                   />
@@ -149,7 +149,7 @@ export function SkillsAndExtrasForm() {
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
                   <div className="space-y-2">
-                    <Label>Project Name <span className="text-primary">*</span></Label>
+                    <Label>Project Name <span className="text-red-500">*</span></Label>
                     <Input placeholder="E-commerce Platform" {...form.register(`projects.${index}.name`)} />
                     {form.formState.errors.projects?.[index]?.name && (
                       <p className="text-sm text-destructive">{form.formState.errors.projects[index]?.name?.message}</p>
@@ -165,7 +165,7 @@ export function SkillsAndExtrasForm() {
                   </div>
 
                   <div className="space-y-2 md:col-span-2">
-                    <Label>Description <span className="text-primary">*</span></Label>
+                    <Label>Description <span className="text-red-500">*</span></Label>
                     <Textarea 
                       placeholder="Built a full-stack e-commerce app using Next.js and Stripe..." 
                       className="min-h-[100px]"
@@ -204,8 +204,8 @@ export function SkillsAndExtrasForm() {
                 </Button>
                 
                 <div className="space-y-2 pr-8">
-                  <Label>Section Title <span className="text-primary">*</span></Label>
-                  <Input placeholder="E.g. Languages" className="font-bold border-primary/30" {...form.register(`customSections.${sectionIndex}.title`)} />
+                  <Label>Section Title <span className="text-red-500">*</span></Label>
+                  <Input placeholder="Languages" className="font-bold border-primary/30" {...form.register(`customSections.${sectionIndex}.title`)} />
                 </div>
 
                 <CustomSectionItems form={form} sectionIndex={sectionIndex} />
@@ -263,7 +263,7 @@ function CustomSectionItems({ form, sectionIndex }: { form: any, sectionIndex: n
              <div className="space-y-3 mt-1 pr-6">
                 <div className="space-y-1">
                   <Label className="text-xs text-slate-500">Title / Label</Label>
-                  <Input placeholder="E.g. Publications" className="h-8 text-sm max-w-[300px]" {...form.register(`customSections.${sectionIndex}.items.${itemIndex}.name`)} />
+                  <Input placeholder="Publications" className="h-8 text-sm max-w-[300px]" {...form.register(`customSections.${sectionIndex}.items.${itemIndex}.name`)} />
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs text-slate-500">Description</Label>
@@ -276,7 +276,7 @@ function CustomSectionItems({ form, sectionIndex }: { form: any, sectionIndex: n
              <div className="space-y-3 mt-1 pr-6">
                 <div className="space-y-1">
                   <Label className="text-xs text-slate-500">Title / Label</Label>
-                  <Input placeholder="E.g. Core Competencies" className="h-8 text-sm max-w-[300px]" {...form.register(`customSections.${sectionIndex}.items.${itemIndex}.name`)} />
+                  <Input placeholder="Core Competencies" className="h-8 text-sm max-w-[300px]" {...form.register(`customSections.${sectionIndex}.items.${itemIndex}.name`)} />
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs text-slate-500">Multiple Points (One per line)</Label>
@@ -289,7 +289,7 @@ function CustomSectionItems({ form, sectionIndex }: { form: any, sectionIndex: n
              <div className="space-y-3 mt-1 pr-6">
                 <div className="space-y-1">
                    <Label className="text-xs text-slate-500">Skill / Metric Name</Label>
-                   <Input placeholder="E.g. JavaScript" className="h-8 text-sm max-w-[300px]" {...form.register(`customSections.${sectionIndex}.items.${itemIndex}.name`)} />
+                   <Input placeholder="JavaScript" className="h-8 text-sm max-w-[300px]" {...form.register(`customSections.${sectionIndex}.items.${itemIndex}.name`)} />
                 </div>
                 <div className="space-y-1 pt-2">
                    <Label className="text-xs flex justify-between max-w-[300px]">

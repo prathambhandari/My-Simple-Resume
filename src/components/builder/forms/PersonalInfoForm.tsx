@@ -42,13 +42,13 @@ export function PersonalInfoForm() {
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="fullName">Full Name <span className="text-primary">*</span></Label>
-              <Input id="fullName" placeholder="e.g. Raj" {...form.register("fullName")} />
+              <Label htmlFor="fullName">Full Name <span className="text-red-500">*</span></Label>
+              <Input id="fullName" placeholder="Raj" {...form.register("fullName")} />
               {form.formState.errors.fullName && <p className="text-sm text-destructive">{form.formState.errors.fullName.message}</p>}
             </div>
             <div className="space-y-2">
               <Label htmlFor="jobTitle">Job Title</Label>
-              <Input id="jobTitle" placeholder="e.g. Frontend Developer" {...form.register("jobTitle")} />
+              <Input id="jobTitle" placeholder="Frontend Developer" {...form.register("jobTitle")} />
               {form.formState.errors.jobTitle && <p className="text-sm text-destructive">{form.formState.errors.jobTitle.message}</p>}
             </div>
             <div className="space-y-2">
@@ -58,7 +58,7 @@ export function PersonalInfoForm() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="phone">Phone</Label>
-              <Input id="phone" placeholder="+1 (555) 123-4567" {...form.register("phone")} />
+              <Input id="phone" placeholder="+91 9876543210" {...form.register("phone")} />
               {form.formState.errors.phone && <p className="text-sm text-destructive">{form.formState.errors.phone.message}</p>}
             </div>
             <div className="space-y-2 md:col-span-2">

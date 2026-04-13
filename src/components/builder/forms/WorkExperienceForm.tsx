@@ -88,7 +88,7 @@ export function WorkExperienceForm() {
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
                   <div className="space-y-2">
-                    <Label>Job Title <span className="text-primary">*</span></Label>
+                    <Label>Job Title <span className="text-red-500">*</span></Label>
                     <Input placeholder="Software Engineer" {...form.register(`experience.${index}.jobTitle`)} />
                     {form.formState.errors.experience?.[index]?.jobTitle && (
                       <p className="text-sm text-destructive">{form.formState.errors.experience[index]?.jobTitle?.message}</p>
@@ -96,7 +96,7 @@ export function WorkExperienceForm() {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label>Company <span className="text-primary">*</span></Label>
+                    <Label>Company <span className="text-red-500">*</span></Label>
                     <Input placeholder="Acme Corp" {...form.register(`experience.${index}.company`)} />
                     {form.formState.errors.experience?.[index]?.company && (
                       <p className="text-sm text-destructive">{form.formState.errors.experience[index]?.company?.message}</p>
@@ -104,7 +104,7 @@ export function WorkExperienceForm() {
                   </div>
 
                   <div className="space-y-2 md:col-span-2">
-                    <Label>Location <span className="text-primary">*</span></Label>
+                    <Label>Location <span className="text-red-500">*</span></Label>
                     <Input placeholder="San Francisco, CA" {...form.register(`experience.${index}.location`)} />
                     {form.formState.errors.experience?.[index]?.location && (
                       <p className="text-sm text-destructive">{form.formState.errors.experience[index]?.location?.message}</p>
@@ -112,7 +112,7 @@ export function WorkExperienceForm() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Start Date <span className="text-primary">*</span></Label>
+                    <Label>Start Date <span className="text-red-500">*</span></Label>
                     <Input placeholder="MM/YYYY" {...form.register(`experience.${index}.startDate`)} />
                     {form.formState.errors.experience?.[index]?.startDate && (
                       <p className="text-sm text-destructive">{form.formState.errors.experience[index]?.startDate?.message}</p>
@@ -136,7 +136,7 @@ export function WorkExperienceForm() {
                   </div>
 
                   <div className="space-y-2 md:col-span-2">
-                    <Label>Description <span className="text-primary">*</span></Label>
+                    <Label>Description <span className="text-red-500">*</span></Label>
                     <Textarea 
                       placeholder="Describe your achievements and responsibilities..." 
                       className="min-h-[120px]"

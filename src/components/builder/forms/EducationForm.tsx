@@ -86,7 +86,7 @@ export function EducationForm() {
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
                   <div className="space-y-2">
-                    <Label>Degree/Course <span className="text-primary">*</span></Label>
+                    <Label>Degree/Course <span className="text-red-500">*</span></Label>
                     <Input placeholder="B.S. Computer Science" {...form.register(`education.${index}.degree`)} />
                     {form.formState.errors.education?.[index]?.degree && (
                       <p className="text-sm text-destructive">{form.formState.errors.education[index]?.degree?.message}</p>
@@ -94,7 +94,7 @@ export function EducationForm() {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label>School/University <span className="text-primary">*</span></Label>
+                    <Label>School/University <span className="text-red-500">*</span></Label>
                     <Input placeholder="University of Technology" {...form.register(`education.${index}.school`)} />
                     {form.formState.errors.education?.[index]?.school && (
                       <p className="text-sm text-destructive">{form.formState.errors.education[index]?.school?.message}</p>
@@ -102,7 +102,7 @@ export function EducationForm() {
                   </div>
 
                   <div className="space-y-2 md:col-span-2">
-                    <Label>Location <span className="text-primary">*</span></Label>
+                    <Label>Location <span className="text-red-500">*</span></Label>
                     <Input placeholder="Boston, MA" {...form.register(`education.${index}.location`)} />
                     {form.formState.errors.education?.[index]?.location && (
                       <p className="text-sm text-destructive">{form.formState.errors.education[index]?.location?.message}</p>
@@ -110,7 +110,7 @@ export function EducationForm() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Start Date <span className="text-primary">*</span></Label>
+                    <Label>Start Date <span className="text-red-500">*</span></Label>
                     <Input placeholder="YYYY or MM/YYYY" {...form.register(`education.${index}.startDate`)} />
                     {form.formState.errors.education?.[index]?.startDate && (
                       <p className="text-sm text-destructive">{form.formState.errors.education[index]?.startDate?.message}</p>
