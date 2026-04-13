@@ -134,7 +134,7 @@ export function EducationForm() {
                   </div>
 
                   <div className="space-y-2 md:col-span-2">
-                    <Label>GPA / Grade (Optional)</Label>
+                    <Label>GPA / Grade</Label>
                     <Input placeholder="3.8/4.0" {...form.register(`education.${index}.gpa`)} />
                   </div>
                 </div>

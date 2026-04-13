@@ -133,7 +133,7 @@ export function SkillsAndExtrasForm() {
 
           {/* PROJECTS SECTION */}
           <div className="space-y-6">
-            <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-200">Projects / Certifications (Optional)</h3>
+            <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-200">Projects / Certifications</h3>
             
             {projectFields.map((field, index) => (
               <div key={field.id} className="p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-slate-800/50 relative group">
@@ -157,7 +157,7 @@ export function SkillsAndExtrasForm() {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label>URL / Link (Optional)</Label>
+                    <Label>URL / Link</Label>
                     <Input placeholder="https://github.com/..." {...form.register(`projects.${index}.url`)} />
                     {form.formState.errors.projects?.[index]?.url && (
                       <p className="text-sm text-destructive">{form.formState.errors.projects[index]?.url?.message}</p>
@@ -188,7 +188,7 @@ export function SkillsAndExtrasForm() {
 
           {/* CUSTOM SECTIONS */}
           <div className="space-y-6">
-            <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-200">Custom Sections (Optional)</h3>
+            <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-200">Custom Sections</h3>
             <p className="text-sm text-slate-500 -mt-2">Need a specialized section for Awards, Languages, or Certifications? Add it here.</p>
             
             {sectionFields.map((section, sectionIndex) => (
@@ -240,33 +240,86 @@ function CustomSectionItems({ form, sectionIndex }: { form: any, sectionIndex: n
     control: form.control,
   });
 
-  const addItem = () => {
+  const addItem = (type: "paragraph" | "bullets" | "progress") => {
     append({
       id: Date.now().toString(36) + Math.random().toString(36).substring(2),
+      type,
       name: "",
       description: "",
+      ...(type === "progress" ? { value: 50 } : {}),
     });
   };
 
   return (
     <div className="space-y-3 mt-4 border-t border-primary/20 pt-4">
       <Label className="text-primary/80">Items in this section</Label>
-      {fields.map((item, itemIndex) => (
-        <div key={item.id} className="grid grid-cols-1 md:grid-cols-2 gap-3 p-3 bg-white dark:bg-slate-900 rounded-lg relative group/item border border-slate-200 dark:border-slate-800 shadow-sm">
+      {fields.map((item: any, itemIndex) => (
+        <div key={item.id} className="p-3 bg-white dark:bg-slate-900 rounded-lg relative group/item border border-slate-200 dark:border-slate-800 shadow-sm animate-in fade-in duration-300">
            <Button type="button" variant="ghost" size="icon" className="absolute top-1 right-1 h-6 w-6 text-slate-400 hover:text-destructive opacity-0 group-hover/item:opacity-100" onClick={() => remove(itemIndex)}>
               <X className="w-3 h-3" />
            </Button>
-           <div className="space-y-1">
-             <Input placeholder="Name (e.g. Spanish)" className="h-8 text-sm" {...form.register(`customSections.${sectionIndex}.items.${itemIndex}.name`)} />
-           </div>
-           <div className="space-y-1">
-             <Input placeholder="Description or Level (e.g. Fluent)" className="h-8 text-sm" {...form.register(`customSections.${sectionIndex}.items.${itemIndex}.description`)} />
-           </div>
+           
+           {(!item.type || item.type === "paragraph") && (
+             <div className="space-y-3 mt-1 pr-6">
+                <div className="space-y-1">
+                  <Label className="text-xs text-slate-500">Title / Label</Label>
+                  <Input placeholder="E.g. Publications" className="h-8 text-sm max-w-[300px]" {...form.register(`customSections.${sectionIndex}.items.${itemIndex}.name`)} />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-slate-500">Description</Label>
+                  <Textarea placeholder="Published paper on..." className="min-h-[80px] text-sm" {...form.register(`customSections.${sectionIndex}.items.${itemIndex}.description`)} />
+                </div>
+             </div>
+           )}
+
+           {item.type === "bullets" && (
+             <div className="space-y-3 mt-1 pr-6">
+                <div className="space-y-1">
+                  <Label className="text-xs text-slate-500">Title / Label</Label>
+                  <Input placeholder="E.g. Core Competencies" className="h-8 text-sm max-w-[300px]" {...form.register(`customSections.${sectionIndex}.items.${itemIndex}.name`)} />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-slate-500">Multiple Points (One per line)</Label>
+                  <Textarea placeholder="Leadership&#10;Mentoring&#10;Agile Development" className="min-h-[100px] text-sm leading-relaxed" {...form.register(`customSections.${sectionIndex}.items.${itemIndex}.description`)} />
+                </div>
+             </div>
+           )}
+
+           {item.type === "progress" && (
+             <div className="space-y-3 mt-1 pr-6">
+                <div className="space-y-1">
+                   <Label className="text-xs text-slate-500">Skill / Metric Name</Label>
+                   <Input placeholder="E.g. JavaScript" className="h-8 text-sm max-w-[300px]" {...form.register(`customSections.${sectionIndex}.items.${itemIndex}.name`)} />
+                </div>
+                <div className="space-y-1 pt-2">
+                   <Label className="text-xs flex justify-between max-w-[300px]">
+                      <span className="text-slate-500">Proficiency Percentage</span>
+                      <span className="text-primary font-bold">{form.watch(`customSections.${sectionIndex}.items.${itemIndex}.value`) || 0}%</span>
+                   </Label>
+                   <Input 
+                      type="range" 
+                      min="0" 
+                      max="100" 
+                      step="5"
+                      className="max-w-[300px] mt-2 cursor-pointer accent-primary" 
+                      {...form.register(`customSections.${sectionIndex}.items.${itemIndex}.value`, { valueAsNumber: true })} 
+                   />
+                </div>
+             </div>
+           )}
         </div>
       ))}
-      <Button type="button" variant="ghost" size="sm" className="h-8 text-primary w-fit -ml-2" onClick={addItem}>
-        <Plus className="w-4 h-4 mr-1" /> Add Item
-      </Button>
+      <div className="flex flex-wrap gap-2 -ml-2 pt-2">
+         <Button type="button" variant="ghost" size="sm" className="h-8 w-fit text-primary hover:bg-primary/10" onClick={() => addItem("paragraph")}>
+           <Plus className="w-3.5 h-3.5 mr-1.5" /> Add Paragraph
+         </Button>
+         <Button type="button" variant="ghost" size="sm" className="h-8 w-fit text-primary hover:bg-primary/10" onClick={() => addItem("bullets")}>
+           <Plus className="w-3.5 h-3.5 mr-1.5" /> Multiple Points
+         </Button>
+         <Button type="button" variant="ghost" size="sm" className="h-8 w-fit text-primary hover:bg-primary/10" onClick={() => addItem("progress")}>
+           <Plus className="w-3.5 h-3.5 mr-1.5" /> Percentage Bar
+         </Button>
+      </div>
     </div>
   );
 }

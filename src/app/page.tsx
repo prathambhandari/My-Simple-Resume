@@ -134,7 +134,7 @@ export default function BuilderPage() {
               {/* Absolute dead centering guarantees perfect alignment regardless of scaling overflows */}
               <div className="absolute left-[50%] top-4 -translate-x-1/2 origin-top scale-[0.42] sm:scale-[0.5] md:scale-[0.6] transition-transform duration-300">
                 <div className="w-[816px] h-[1056px] shadow-2xl bg-white">
-                  <DynamicTemplate templateId={template} />
+                  <DynamicTemplate templateId={template} showPageBreaks={true} />
                 </div>
               </div>
               

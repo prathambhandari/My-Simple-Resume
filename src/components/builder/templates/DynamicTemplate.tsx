@@ -4,7 +4,7 @@ import { useResumeStore } from "@/store/useResumeStore";
 import { Mail, Phone, MapPin, Globe, Link } from "lucide-react";
 import { TemplateType } from "@/types/resume";
 
-export function DynamicTemplate({ templateId }: { templateId: TemplateType }) {
+export function DynamicTemplate({ templateId, showPageBreaks = false }: { templateId: TemplateType, showPageBreaks?: boolean }) {
   const { data } = useResumeStore();
   const { personalInfo, summary, experience, education, skills, projects, customSections } = data;
 
@@ -86,7 +86,7 @@ export function DynamicTemplate({ templateId }: { templateId: TemplateType }) {
   };
 
   return (
-    <div className={`bg-white text-slate-800 p-8 min-h-[1056px] shadow-sm w-full max-w-[816px] mx-auto scale-[0.8] origin-top md:scale-100 ${styles.container}`}>
+    <div className={`relative bg-white text-slate-800 p-8 min-h-[1056px] shadow-sm w-full max-w-[816px] mx-auto scale-[0.8] origin-top md:scale-100 ${styles.container}`}>
       {/* Header */}
       <header className={styles.header}>
         <div className={templateId === "professional" ? "flex-1" : ""}>
@@ -229,11 +229,45 @@ export function DynamicTemplate({ templateId }: { templateId: TemplateType }) {
             {section.title}
           </h2>
           <div className="space-y-3">
-            {section.items.map((item) => (
+            {section.items.map((item: any) => (
               <div key={item.id} className={templateId === "minimal" ? "border-l-2 border-slate-200 pl-4 py-1" : ""}>
-                <h3 className="font-bold text-slate-800">{item.name}</h3>
-                {item.description && (
-                  <p className="text-sm text-slate-700 whitespace-pre-wrap">{item.description}</p>
+                {(!item.type || item.type === "paragraph") && (
+                  <>
+                    <h3 className="font-bold text-slate-800">{item.name}</h3>
+                    {item.description && (
+                      <p className="text-sm text-slate-700 whitespace-pre-wrap">{item.description}</p>
+                    )}
+                  </>
+                )}
+                
+                {item.type === "bullets" && (
+                  <>
+                    <h3 className="font-bold text-slate-800 mb-1">{item.name}</h3>
+                    {item.description && (
+                      <ul className="list-disc list-inside text-sm text-slate-700 space-y-1">
+                        {item.description.split('\n').filter(Boolean).map((bullet: string, i: number) => (
+                          <li key={i} className="pl-1 leading-relaxed">
+                            <span className="-ml-1">{bullet.trim()}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </>
+                )}
+
+                {item.type === "progress" && (
+                  <div className="flex flex-col gap-1 w-full mt-1">
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="font-bold text-slate-800">{item.name}</span>
+                      <span className="text-slate-600 font-medium">{item.value || 0}%</span>
+                    </div>
+                    <div className="h-1.5 w-full max-w-sm bg-slate-200 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-primary rounded-full" 
+                        style={{ width: `${item.value || 0}%` }}
+                      ></div>
+                    </div>
+                  </div>
                 )}
               </div>
             ))}
@@ -244,6 +278,22 @@ export function DynamicTemplate({ templateId }: { templateId: TemplateType }) {
       {/* Skills Output for other templates */}
       {!isProfessional && renderSkills()}
 
+      {/* Suggested Page Breaks Overlay */}
+      {showPageBreaks && (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden h-full z-50 rounded-b-sm">
+           {[...Array(5)].map((_, i) => i > 0 && (
+               <div 
+                 key={i} 
+                 className="absolute w-[816px] border-t-[1.5px] border-dashed border-slate-300 left-0 flex justify-center opacity-80"
+                 style={{ top: `${i * 1056}px` }}
+               >
+                 <span className="bg-white text-slate-400 text-[10px] font-bold px-3 py-1 rounded-b shadow-sm uppercase tracking-widest border border-t-0 border-slate-200 pointer-events-auto">
+                   Suggested Page {i + 1}
+                 </span>
+               </div>
+           ))}
+        </div>
+      )}
     </div>
   );
 }

@@ -52,8 +52,10 @@ export const projectSchema = z.object({
 
 export const customItemSchema = z.object({
   id: z.string(),
-  name: z.string().min(1, "Name is required"),
+  type: z.enum(["paragraph", "bullets", "progress"]).default("paragraph"),
+  name: z.string().min(1, "Title/Label is required"),
   description: z.string().optional(),
+  value: z.coerce.number().min(0).max(100).optional(),
 });
 
 export const customSectionSchema = z.object({

@@ -4,9 +4,10 @@ import { useState, useEffect } from "react";
 import { useResumeStore } from "@/store/useResumeStore";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Download, CheckCircle, LayoutTemplate } from "lucide-react";
+import { Download, Check, LayoutTemplate } from "lucide-react";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import { DynamicPDF } from "../pdf/DynamicPDF";
+import { DynamicTemplate } from "../templates/DynamicTemplate";
 import { TemplateType } from "@/types/resume";
 import { cn } from "@/lib/utils";
 
@@ -51,20 +52,21 @@ export function ReviewAndFinalize() {
             )}
             onClick={() => setTemplate(tpl.id)}
           >
-            <div className="h-40 bg-slate-100 dark:bg-slate-800 flex items-center justify-center p-4">
-              {/* Thumbnail Representation */}
-              <div className="w-24 h-32 bg-white shadow-sm border rounded-sm p-2 flex flex-col gap-1 transition-transform group-hover:scale-105">
-                <div className="h-2 w-full bg-slate-300 rounded-full" />
-                <div className="h-1 w-1/2 bg-primary rounded-full mb-2" />
-                <div className="h-1 w-full bg-slate-200 rounded-full" />
-                <div className="h-1 w-full bg-slate-200 rounded-full" />
-                <div className="h-1 w-3/4 bg-slate-200 rounded-full" />
+            <div className="h-40 bg-slate-100 dark:bg-slate-800 flex items-start justify-center p-0 overflow-hidden pt-4 pointer-events-none select-none relative after:absolute after:inset-0 after:bg-gradient-to-b after:from-transparent after:via-transparent after:to-slate-100 dark:after:to-slate-800">
+              <div className="transition-transform group-hover:scale-105 duration-300">
+                <div className="origin-top scale-[0.18] w-[816px] drop-shadow-md">
+                  <DynamicTemplate templateId={tpl.id} />
+                </div>
               </div>
             </div>
             <CardContent className="p-4">
               <div className="flex justify-between items-center mb-1">
                 <h3 className="font-bold text-slate-800 dark:text-slate-100">{tpl.name}</h3>
-                {template === tpl.id && <CheckCircle className="w-5 h-5 text-primary" />}
+                {template === tpl.id && (
+                  <div className="bg-primary text-white rounded-full p-1 animate-in zoom-in duration-300 shadow-sm flex items-center justify-center">
+                    <Check className="w-3.5 h-3.5" strokeWidth={4} />
+                  </div>
+                )}
               </div>
               <p className="text-xs text-slate-500">{tpl.desc}</p>
             </CardContent>

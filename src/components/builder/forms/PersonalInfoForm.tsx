@@ -43,7 +43,7 @@ export function PersonalInfoForm() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="fullName">Full Name <span className="text-primary">*</span></Label>
-              <Input id="fullName" placeholder="e.g. John Doe" {...form.register("fullName")} />
+              <Input id="fullName" placeholder="e.g. Raj" {...form.register("fullName")} />
               {form.formState.errors.fullName && <p className="text-sm text-destructive">{form.formState.errors.fullName.message}</p>}
             </div>
             <div className="space-y-2">
@@ -53,7 +53,7 @@ export function PersonalInfoForm() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="john@example.com" {...form.register("email")} />
+              <Input id="email" type="email" placeholder="raj@example.com" {...form.register("email")} />
               {form.formState.errors.email && <p className="text-sm text-destructive">{form.formState.errors.email.message}</p>}
             </div>
             <div className="space-y-2">
@@ -67,17 +67,17 @@ export function PersonalInfoForm() {
               {form.formState.errors.location && <p className="text-sm text-destructive">{form.formState.errors.location.message}</p>}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="linkedin">LinkedIn URL (Optional)</Label>
-              <Input id="linkedin" placeholder="https://linkedin.com/in/johndoe" {...form.register("linkedin")} />
+              <Label htmlFor="linkedin">LinkedIn URL</Label>
+              <Input id="linkedin" placeholder="https://linkedin.com/in/raj" {...form.register("linkedin")} />
               {form.formState.errors.linkedin && <p className="text-sm text-destructive">{form.formState.errors.linkedin.message}</p>}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="github">GitHub URL (Optional)</Label>
-              <Input id="github" placeholder="https://github.com/johndoe" {...form.register("github")} />
+              <Label htmlFor="github">GitHub URL</Label>
+              <Input id="github" placeholder="https://github.com/raj" {...form.register("github")} />
               {form.formState.errors.github && <p className="text-sm text-destructive">{form.formState.errors.github.message}</p>}
             </div>
             <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="website">Personal Website (Optional)</Label>
+              <Label htmlFor="website">Personal Website</Label>
               <Input id="website" placeholder="https://yourwebsite.com" {...form.register("website")} />
               {form.formState.errors.website && <p className="text-sm text-destructive">{form.formState.errors.website.message}</p>}
             </div>

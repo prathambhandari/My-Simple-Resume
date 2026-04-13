@@ -216,12 +216,46 @@ export function DynamicPDF({ data, templateId, themeColor }: { data: ResumeData;
         {customSections && customSections.length > 0 && customSections.map((section) => (
           <View key={section.id} style={tplStyles.section || base.section}>
             {renderSectionTitle(section.title)}
-            {section.items.map((item) => (
+            {section.items.map((item: any) => (
               <View key={item.id} style={templateId === "minimal" ? { paddingLeft: 10, borderLeftWidth: 1, borderLeftColor: "#e2e8f0", marginBottom: 6 } : { marginBottom: 6 }}>
-                <Text style={[base.itemTitle, tplStyles.itemTitle, { marginBottom: item.description ? 2 : 0 }]}>{item.name}</Text>
-                {item.description && (
-                  <Text style={[base.description, tplStyles.description]}>{item.description}</Text>
+                
+                {(!item.type || item.type === "paragraph") && (
+                  <>
+                    <Text style={[base.itemTitle, tplStyles.itemTitle, { marginBottom: item.description ? 2 : 0 }]}>{item.name}</Text>
+                    {item.description && (
+                      <Text style={[base.description, tplStyles.description]}>{item.description}</Text>
+                    )}
+                  </>
                 )}
+
+                {item.type === "bullets" && (
+                  <>
+                    <Text style={[base.itemTitle, tplStyles.itemTitle, { marginBottom: 2 }]}>{item.name}</Text>
+                    {item.description && (
+                      <View style={{ marginBottom: 4 }}>
+                        {item.description.split('\n').filter(Boolean).map((bullet: string, i: number) => (
+                          <View key={i} style={{ flexDirection: 'row', marginBottom: 2 }}>
+                            <Text style={{ fontSize: 10, color: "#334155", width: 10, textAlign: 'center' }}>•</Text>
+                            <Text style={[base.description, tplStyles.description, { flex: 1, marginBottom: 0 }]}>{bullet.trim()}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    )}
+                  </>
+                )}
+
+                {item.type === "progress" && (
+                  <View style={{ marginTop: 2, marginBottom: 4 }}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 3, width: "60%" }}>
+                      <Text style={[base.itemTitle, tplStyles.itemTitle]}>{item.name}</Text>
+                      <Text style={{ fontSize: 9, color: "#64748b", fontFamily: "Helvetica-Bold" }}>{item.value || 0}%</Text>
+                    </View>
+                    <View style={{ height: 6, backgroundColor: "#e2e8f0", borderRadius: 3, width: "60%", overflow: "hidden" }}>
+                      <View style={{ height: "100%", backgroundColor: themeColor, borderRadius: 3, width: `${item.value || 0}%` }}></View>
+                    </View>
+                  </View>
+                )}
+
               </View>
             ))}
           </View>
