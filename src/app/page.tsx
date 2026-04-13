@@ -151,9 +151,6 @@ export default function BuilderPage() {
       {resetConfirmOpen && (
         <div className="fixed inset-0 z-[60] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white dark:bg-slate-900 w-full max-w-sm rounded-[2rem] shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200 p-8 text-center ring-1 ring-red-500/20">
-            <div className="w-20 h-20 bg-red-50 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-6 text-red-500 border-4 border-white dark:border-slate-800 shadow-sm">
-               <RotateCcw className="w-10 h-10" />
-            </div>
             <h3 className="font-extrabold text-2xl text-slate-800 dark:text-slate-100 mb-3">Clear Everything?</h3>
             <p className="text-slate-500 text-sm mb-8 leading-relaxed">This will permanently delete all your inputted data, skills, and experience returning you to a completely blank slate. <strong className="text-red-500 font-medium">This cannot be undone.</strong></p>
             <div className="flex flex-col sm:flex-row gap-3 w-full">
@@ -168,7 +165,7 @@ export default function BuilderPage() {
                    resetStore();
                    setResetConfirmOpen(false);
                  }}
-                 className="flex-1 px-4 py-3.5 bg-red-500 text-white font-bold rounded-2xl hover:bg-red-600 shadow-lg shadow-red-500/30 transition-all hover:-translate-y-0.5"
+                 className="flex-1 px-4 py-3.5 bg-primary text-white font-bold rounded-2xl hover:bg-primary/90 shadow-lg shadow-primary/30 transition-all hover:-translate-y-0.5"
                >
                  Yes, Reset
                </button>
