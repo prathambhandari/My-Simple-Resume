@@ -12,13 +12,30 @@ import { useEffect, useState } from "react";
 import { Eye, X } from "lucide-react";
 import { DynamicTemplate } from "@/components/builder/templates/DynamicTemplate";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 
 const TOTAL_FLOW_STEPS = 6;
+
+/** Override with `NEXT_PUBLIC_DONATE_URL` in `.env.local` for your tip/support page. */
+const DONATE_URL =
+  process.env.NEXT_PUBLIC_DONATE_URL ??
+  "https://razorpay.me/@prathambhandari";
 
 export default function BuilderPage() {
   const currentStep = useResumeStore((state) => state.currentStep);
   const template = useResumeStore((state) => state.template);
+  const resetStore = useResumeStore((state) => state.resetStore);
+
+  const handleReset = () => {
+    if (
+      typeof window !== "undefined" &&
+      window.confirm(
+        "Clear all resume data and start over from step 1? This cannot be undone."
+      )
+    ) {
+      resetStore();
+    }
+  };
   const [mounted, setMounted] = useState(false);
   const [mobilePreviewOpen, setMobilePreviewOpen] = useState(false);
 
@@ -55,10 +72,32 @@ export default function BuilderPage() {
   return (
     <div className="flex min-h-[100dvh] min-h-screen flex-col bg-background text-foreground transition-colors duration-300">
       <header className="sticky top-0 z-50 w-full border-b border-white/[0.08] bg-black/70 backdrop-blur-xl supports-[backdrop-filter]:bg-black/55">
-        <div className="mx-auto flex w-full max-w-[min(1320px,calc(100vw-2rem))] flex-nowrap items-center gap-4 px-4 py-3 sm:px-6 md:h-16 md:py-0">
+        <div className="mx-auto flex w-full max-w-[min(1320px,calc(100vw-2rem))] flex-nowrap items-center gap-3 px-4 py-3 sm:gap-4 sm:px-6 md:h-16 md:py-0">
           <span className="font-heading min-w-0 flex-1 truncate text-xl font-medium tracking-[-0.06em] text-white sm:text-2xl">
             My Simple Resume
           </span>
+          <div className="flex shrink-0 items-center gap-2">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="text-[15px] tracking-[-0.02em] text-white"
+              onClick={handleReset}
+            >
+              Reset
+            </Button>
+            <a
+              href={DONATE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={cn(
+                buttonVariants({ variant: "outline", size: "sm" }),
+                "text-[15px] tracking-[-0.02em]"
+              )}
+            >
+              Donate
+            </a>
+          </div>
         </div>
       </header>
 
