@@ -61,11 +61,14 @@ export function EducationForm() {
   };
   
   return (
-    <Card className="glass-card bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border-white/40 dark:border-slate-800 shadow-sm border-0">
-      <CardContent className="p-6 md:p-8">
+    <Card className="overflow-visible rounded-none border-none bg-transparent shadow-none ring-0">
+      <CardContent className="p-5 md:p-6">
         <div className="mb-6">
-          <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100">Education</h2>
-          <p className="text-slate-500 text-sm mt-1">Add your educational background, degrees, and certifications.</p>
+          <span className="text-mono-label text-muted-foreground">Step 4</span>
+          <h2 className="font-heading mt-2 text-2xl font-medium tracking-[-0.06em] text-foreground">Education</h2>
+          <p className="text-muted-foreground text-sm mt-1 font-[330] tracking-[-0.1px] leading-relaxed">
+            Add your educational background, degrees, and certifications.
+          </p>
         </div>
 
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
@@ -73,20 +76,20 @@ export function EducationForm() {
             const isCurrent = form.watch(`education.${index}.current`);
             
             return (
-              <div key={field.id} className="p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-slate-800/50 relative group">
+              <div key={field.id} className="relative group rounded-lg border border-white/[0.08] bg-white/[0.04] p-4">
                 <Button 
                   type="button" 
                   variant="ghost" 
                   size="icon" 
-                  className="absolute top-2 right-2 text-slate-400 hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="absolute top-2 right-2 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
                   onClick={() => remove(index)}
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                <div className="mt-2 grid grid-cols-1 gap-4">
                   <div className="space-y-2">
-                    <Label>Degree/Course <span className="text-red-500">*</span></Label>
+                    <Label>Degree/Course <span className="text-destructive font-[540]">*</span></Label>
                     <Input placeholder="B.S. Computer Science" {...form.register(`education.${index}.degree`)} />
                     {form.formState.errors.education?.[index]?.degree && (
                       <p className="text-sm text-destructive">{form.formState.errors.education[index]?.degree?.message}</p>
@@ -94,15 +97,15 @@ export function EducationForm() {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label>School/University <span className="text-red-500">*</span></Label>
+                    <Label>School/University <span className="text-destructive font-[540]">*</span></Label>
                     <Input placeholder="University of Technology" {...form.register(`education.${index}.school`)} />
                     {form.formState.errors.education?.[index]?.school && (
                       <p className="text-sm text-destructive">{form.formState.errors.education[index]?.school?.message}</p>
                     )}
                   </div>
 
-                  <div className="space-y-2 md:col-span-2">
-                    <Label>Location <span className="text-red-500">*</span></Label>
+                  <div className="space-y-2">
+                    <Label>Location <span className="text-destructive font-[540]">*</span></Label>
                     <Input placeholder="Boston, MA" {...form.register(`education.${index}.location`)} />
                     {form.formState.errors.education?.[index]?.location && (
                       <p className="text-sm text-destructive">{form.formState.errors.education[index]?.location?.message}</p>
@@ -110,7 +113,7 @@ export function EducationForm() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Start Date <span className="text-red-500">*</span></Label>
+                    <Label>Start Date <span className="text-destructive font-[540]">*</span></Label>
                     <Input placeholder="YYYY or MM/YYYY" {...form.register(`education.${index}.startDate`)} />
                     {form.formState.errors.education?.[index]?.startDate && (
                       <p className="text-sm text-destructive">{form.formState.errors.education[index]?.startDate?.message}</p>
@@ -122,7 +125,7 @@ export function EducationForm() {
                     <Input placeholder="YYYY or MM/YYYY" disabled={isCurrent} {...form.register(`education.${index}.endDate`)} />
                   </div>
 
-                  <div className="flex items-center space-x-2 md:col-span-2 my-2">
+                  <div className="my-2 flex items-center space-x-2">
                     <Switch 
                       checked={isCurrent}
                       onCheckedChange={(val) => {
@@ -133,7 +136,7 @@ export function EducationForm() {
                     <Label className="cursor-pointer">I am currently studying here</Label>
                   </div>
 
-                  <div className="space-y-2 md:col-span-2">
+                  <div className="space-y-2">
                     <Label>GPA / Grade</Label>
                     <Input placeholder="3.8/4.0" {...form.register(`education.${index}.gpa`)} />
                   </div>
@@ -143,30 +146,34 @@ export function EducationForm() {
           })}
 
           {fields.length === 0 && (
-            <div className="text-center p-8 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl">
-              <p className="text-slate-500 mb-4">No education entries added yet.</p>
+            <div className="border-none bg-transparent px-0 py-4 text-center">
+              <p className="mb-4 text-sm font-[330] tracking-[-0.1px] text-muted-foreground">
+                No education entries added yet.
+              </p>
               <Button type="button" variant="outline" onClick={addEducation}>
-                <Plus className="w-4 h-4 mr-2" /> Add Education
+                <Plus className="mr-2 h-4 w-4" /> Add Education
               </Button>
             </div>
           )}
 
           {fields.length > 0 && (
-            <Button type="button" variant="outline" className="w-full border-dashed" onClick={addEducation}>
+            <Button type="button" variant="outline" className="w-full border-border" onClick={addEducation}>
               <Plus className="w-4 h-4 mr-2" /> Add Another Degree
             </Button>
           )}
 
-          <div className="flex justify-between pt-6 border-t border-slate-200 dark:border-slate-800">
-            <Button type="button" variant="outline" onClick={prevStep}>
-              Back
-            </Button>
-            <Button 
-              type="submit" 
-              className="px-8 shadow-md hover:shadow-lg transition-all"
-            >
-              Save & Next Step
-            </Button>
+          <div className="form-action-bleed pt-6">
+            <div className="flex justify-between gap-4">
+              <Button type="button" variant="outline" onClick={prevStep}>
+                Back
+              </Button>
+              <Button
+                type="submit"
+                className="min-w-[160px] px-8 transition-opacity hover:opacity-95"
+              >
+                Save & Next Step
+              </Button>
+            </div>
           </div>
         </form>
       </CardContent>

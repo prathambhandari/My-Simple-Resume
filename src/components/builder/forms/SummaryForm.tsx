@@ -32,16 +32,18 @@ export function ProfessionalSummaryForm() {
   }, [form.watch, updateData]);
   
   return (
-    <Card className="glass-card bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border-white/40 dark:border-slate-800 shadow-sm border-0">
-      <CardContent className="p-6 md:p-8">
+    <Card className="overflow-visible rounded-none border-none bg-transparent shadow-none ring-0">
+      <CardContent className="p-5 md:p-6">
         <div className="mb-6">
-          <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100">Professional Summary</h2>
-          <p className="text-slate-500 text-sm mt-1">Write a short, engaging pitch highlighting your expertise and career goals.</p>
+          <span className="text-mono-label text-muted-foreground">Step 2</span>
+          <h2 className="font-heading mt-2 text-2xl font-medium tracking-[-0.06em] text-foreground">
+            Professional summary
+          </h2>
         </div>
 
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="summary">Summary <span className="text-primary">*</span></Label>
+            <Label htmlFor="summary">Summary <span className="text-destructive font-[540]">*</span></Label>
             <Textarea 
               id="summary" 
               placeholder="A highly motivated software engineer with 5+ years of experience in..." 
@@ -51,16 +53,18 @@ export function ProfessionalSummaryForm() {
             {form.formState.errors.summary && <p className="text-sm text-destructive">{form.formState.errors.summary.message}</p>}
           </div>
 
-          <div className="flex justify-between pt-4">
-            <Button type="button" variant="outline" onClick={prevStep}>
-              Back
-            </Button>
-            <Button 
-              type="submit" 
-              className="px-8 shadow-md hover:shadow-lg transition-all"
-            >
-              Save & Next Step
-            </Button>
+          <div className="form-action-bleed pt-4">
+            <div className="flex justify-between gap-4">
+              <Button type="button" variant="outline" onClick={prevStep}>
+                Back
+              </Button>
+              <Button
+                type="submit"
+                className="min-w-[160px] px-8 transition-opacity hover:opacity-95"
+              >
+                Save & Next Step
+              </Button>
+            </div>
           </div>
         </form>
       </CardContent>

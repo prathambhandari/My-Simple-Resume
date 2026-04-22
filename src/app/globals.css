@@ -4,12 +4,16 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Framer-inspired dark system (DESIGN.md): void black, Framer Blue accent, elevated #090909 */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
+  --font-sans: var(--font-inter, ui-sans-serif), system-ui, -apple-system, sans-serif;
+  --font-heading: var(--font-outfit, ui-sans-serif), system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains, ui-monospace), "SF Mono", menlo, monospace;
+  --color-framer-blue: #0099ff;
+  --color-framer-glow: rgba(0, 153, 255, 0.15);
+  --color-resume-accent: var(--resume-accent);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -39,86 +43,234 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+  --radius-xl: 15px;
+  --radius-2xl: 20px;
+  --radius-3xl: 40px;
+  --radius-4xl: 100px;
 }
 
 :root {
-  --background: #f8fafc; /* off-white/slate-50 */
-  --foreground: #020617; /* slate-950 */
-  --card: #ffffff;
-  --card-foreground: #020617;
-  --popover: #ffffff;
-  --popover-foreground: #020617;
-  
-  /* Primary Red Accent #EF233C */
-  --primary: #ef233c;
-  --primary-foreground: #ffffff;
-  
-  --secondary: #f1f5f9; /* slate-100 */
-  --secondary-foreground: #0f172a; /* slate-900 */
-  --muted: #f1f5f9;
-  --muted-foreground: #64748b; /* slate-500 */
-  --accent: #f1f5f9;
-  --accent-foreground: #0f172a;
-  
-  --destructive: #ef4444; /* red-500 */
-  --border: #e2e8f0; /* slate-200 */
-  --input: #e2e8f0;
-  --ring: #ef233c;
-  
-  --chart-1: #ef233c;
-  --chart-2: #8b5cf6;
-  --chart-3: #10b981;
-  --chart-4: #f59e0b;
-  --chart-5: #3b82f6;
-  
-  --radius: 0.75rem; /* slightly rounder for glass */
+  --resume-accent: #0099ff;
+
+  --background: #000000;
+  --foreground: #ffffff;
+
+  --card: #090909;
+  --card-foreground: #ffffff;
+
+  --popover: #090909;
+  --popover-foreground: #ffffff;
+
+  /* Solid white pill CTA */
+  --primary: #ffffff;
+  --primary-foreground: #000000;
+
+  /* Frosted interactive */
+  --secondary: rgba(255, 255, 255, 0.1);
+  --secondary-foreground: #ffffff;
+
+  --muted: rgba(255, 255, 255, 0.08);
+  --muted-foreground: #a6a6a6;
+
+  --accent: rgba(255, 255, 255, 0.1);
+  --accent-foreground: #ffffff;
+
+  --destructive: #ff6b6b;
+  --border: rgba(255, 255, 255, 0.12);
+  --input: rgba(255, 255, 255, 0.12);
+  --ring: #0099ff;
+
+  --chart-1: #0099ff;
+  --chart-2: #a6a6a6;
+  --chart-3: #737373;
+  --chart-4: #525252;
+  --chart-5: #404040;
+
+  --radius: 12px;
 }
 
 .dark {
-  --background: #020617; /* slate-950 */
-  --foreground: #f8fafc; /* slate-50 */
-  --card: #0f172a;
-  --card-foreground: #f8fafc;
-  --popover: #0f172a;
-  --popover-foreground: #f8fafc;
-  
-  --primary: #ef233c;
-  --primary-foreground: #ffffff;
-  
-  --secondary: #1e293b; /* slate-800 */
-  --secondary-foreground: #f8fafc;
-  --muted: #1e293b;
-  --muted-foreground: #94a3b8; /* slate-400 */
-  --accent: #1e293b;
-  --accent-foreground: #f8fafc;
-  
-  --destructive: #7f1d1d; /* red-900 */
-  --border: #1e293b;
-  --input: #1e293b;
-  --ring: #ef233c;
-  
-  --chart-1: #ef233c;
-  --chart-2: #8b5cf6;
-  --chart-3: #10b981;
-  --chart-4: #f59e0b;
-  --chart-5: #3b82f6;
+  --resume-accent: #0099ff;
+  --background: #000000;
+  --foreground: #ffffff;
+  --card: #090909;
+  --card-foreground: #ffffff;
+  --popover: #090909;
+  --popover-foreground: #ffffff;
+  --primary: #ffffff;
+  --primary-foreground: #000000;
+  --secondary: rgba(255, 255, 255, 0.1);
+  --secondary-foreground: #ffffff;
+  --muted: rgba(255, 255, 255, 0.08);
+  --muted-foreground: #a6a6a6;
+  --accent: rgba(255, 255, 255, 0.1);
+  --accent-foreground: #ffffff;
+  --destructive: #ff6b6b;
+  --border: rgba(255, 255, 255, 0.12);
+  --input: rgba(255, 255, 255, 0.12);
+  --ring: #0099ff;
 }
 
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
+  /* Avoid universal border-color → stray 1px seams on dark UI (Tailwind/shadcn * + preflight). */
+  hr {
+    border: 0 !important;
+    margin: 0 !important;
+    height: 0 !important;
+    overflow: hidden;
   }
+
+  [data-sonner-toaster] {
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+  }
+
+  html {
+    @apply font-sans antialiased;
+    font-feature-settings:
+      "kern" 1,
+      "cv01" 1,
+      "cv05" 1,
+      "cv09" 1,
+      "cv11" 1,
+      "ss03" 1,
+      "ss07" 1;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  html::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+
   body {
     @apply bg-background text-foreground;
+    font-weight: 400;
+    letter-spacing: -0.01px;
+    line-height: 1.45;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
   }
-  html {
-    @apply font-sans;
+  body::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+
+  .font-heading {
+    font-family: var(--font-heading), var(--font-sans);
+    font-weight: 500;
+  }
+
+  /* Links only — buttons use component focus styles (avoid duplicate rings + Safari hairlines). */
+  a:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  /* iOS Safari keeps :focus after tap; kill stray outline/shadow (not keyboard focus-visible). */
+  button:focus:not(:focus-visible) {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+}
+
+@layer utilities {
+  /** Top flow progress bar — multi-stop read (not flat blue on a 1px strip). */
+  .flow-progress-gradient {
+    background: linear-gradient(
+      90deg,
+      #a855f7 0%,
+      #6366f1 22%,
+      #0099ff 52%,
+      #22d3ee 82%,
+      #2dd4bf 100%
+    );
+  }
+
+  .ring-framer {
+    box-shadow: inset 0 0 0 1px rgba(0, 153, 255, 0.15);
+  }
+
+  .shadow-framer-float {
+    box-shadow:
+      rgba(255, 255, 255, 0.06) 0px 0.5px 0px 0.5px,
+      rgba(0, 0, 0, 0.35) 0px 12px 36px;
+  }
+
+  .text-display {
+    font-family: var(--font-heading), var(--font-sans);
+    font-size: clamp(2.5rem, 6vw, 5.375rem);
+    font-weight: 500;
+    line-height: 0.95;
+    letter-spacing: -0.08em;
+  }
+
+  .text-section-heading {
+    font-family: var(--font-heading), var(--font-sans);
+    font-size: clamp(2rem, 4vw, 3.75rem);
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: -0.06em;
+  }
+
+  .text-mono-label {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 400;
+    line-height: 1;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted-foreground);
+  }
+
+  .pill-button {
+    border-radius: 100px;
+    padding: 10px 15px;
+  }
+
+  .frosted-pill-surface {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+
+  /**
+   * Full-bleed black behind step footers — covers stray gray/WebKit hairlines under CTAs.
+   * Matches CardContent horizontal padding (p-5 / md:p-6).
+   */
+  .form-action-bleed {
+    margin-left: -1.25rem;
+    margin-right: -1.25rem;
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+    padding-bottom: max(3rem, env(safe-area-inset-bottom, 0px));
+    background-color: var(--background);
+    border: 0 !important;
+    box-shadow: none !important;
+  }
+  @media (min-width: 768px) {
+    .form-action-bleed {
+      margin-left: -1.5rem;
+      margin-right: -1.5rem;
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+  }
+
+  .custom-scrollbar,
+  .scrollbar-none {
+    -ms-overflow-style: none !important;
+    scrollbar-width: none !important;
+  }
+  .custom-scrollbar::-webkit-scrollbar,
+  .scrollbar-none::-webkit-scrollbar {
+    width: 0 !important;
+    height: 0 !important;
+    background: transparent !important;
+    display: none !important;
   }
 }

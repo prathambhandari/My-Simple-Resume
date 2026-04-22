@@ -1,270 +1,529 @@
 import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
 import { ResumeData, TemplateType } from "@/types/resume";
 
-export function DynamicPDF({ data, templateId, themeColor }: { data: ResumeData; templateId: TemplateType; themeColor: string }) {
+/** PDF variants: single-column, LETTER, Helvetica/Times—aligned with preview templates. */
+export function DynamicPDF({
+  data,
+  templateId,
+  themeColor,
+}: {
+  data: ResumeData;
+  templateId: TemplateType;
+  themeColor: string;
+}) {
   const { personalInfo, summary, experience, education, skills, projects, customSections } = data;
 
-  // Base styles that are shared across all templates
-  const base = StyleSheet.create({
-    page: { padding: 30, lineHeight: 1.5, color: "#1e293b", fontFamily: "Helvetica" },
-    contactRow: { flexDirection: "row", flexWrap: "wrap", fontSize: 10, color: "#475569" },
-    section: { marginBottom: 15 },
-    itemTitleRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 2 },
-    itemSubRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 4 },
-    itemTitle: { fontSize: 11, fontFamily: "Helvetica-Bold", color: "#1e293b" },
-    itemDates: { fontSize: 10, fontFamily: "Helvetica-Bold" },
-    itemSubtitle: { fontSize: 10, fontFamily: "Helvetica-Bold", color: "#334155" },
-    itemLocation: { fontSize: 10, color: "#64748b" },
-    description: { fontSize: 10, color: "#334155", marginBottom: 8 },
-    skillsArray: { flexDirection: "row", flexWrap: "wrap", gap: 5 },
-    skillPill: { fontSize: 10, padding: "2 6", backgroundColor: "#f1f5f9", color: "#334155", borderRadius: 4 },
-  });
+  const accent = themeColor?.trim() && /^#/i.test(themeColor.trim()) ? themeColor.trim() : "#171717";
 
-  // Template-specific style overrides
-  const templates = {
-    classic: StyleSheet.create({
-      page: { fontFamily: "Helvetica" },
-      header: { marginBottom: 20, borderBottomWidth: 2, paddingBottom: 10, borderBottomColor: themeColor },
-      name: { fontSize: 24, fontFamily: "Helvetica-Bold", textTransform: "uppercase", marginBottom: 4, color: "#0f172a" },
-      jobTitle: { fontSize: 14, fontFamily: "Helvetica-Bold", marginBottom: 8, color: themeColor },
-      contactRow: { gap: 10 },
-      sectionTitle: { fontSize: 12, fontFamily: "Helvetica-Bold", textTransform: "uppercase", color: "#0f172a", marginBottom: 5 },
-    }),
-    minimal: StyleSheet.create({
-      page: { padding: 40, fontFamily: "Helvetica" }, // Helvetica is close enough to font-light if standard
-      header: { marginBottom: 25, textAlign: "center" },
-      name: { fontSize: 28, color: "#1e293b", marginBottom: 6 },
-      jobTitle: { fontSize: 13, color: "#64748b", marginBottom: 12 },
-      contactRow: { justifyContent: "center", gap: 12 },
-      sectionTitle: { fontSize: 11, textTransform: "uppercase", color: "#94a3b8", marginBottom: 8, textAlign: "center" },
-    }),
-    executive: StyleSheet.create({
-      page: { fontFamily: "Times-Roman" },
-      header: { backgroundColor: "#f8fafc", padding: 20, marginBottom: 20, textAlign: "center", borderTopWidth: 4, borderBottomWidth: 1, borderColor: "#0f172a" },
-      name: { fontSize: 26, fontFamily: "Times-Bold", color: "#0f172a", marginBottom: 4 },
-      jobTitle: { fontSize: 14, fontFamily: "Times-Bold", color: "#334155", marginBottom: 8 },
-      contactRow: { justifyContent: "center", gap: 10 },
-      sectionTitle: { fontSize: 14, fontFamily: "Times-Bold", color: "#0f172a", marginBottom: 6, borderBottomWidth: 1, borderBottomColor: "#e2e8f0", paddingBottom: 2 },
-    }),
-    compact: StyleSheet.create({
-      page: { padding: 20, fontSize: 10, lineHeight: 1.3 },
-      header: { marginBottom: 12, borderBottomWidth: 1, borderBottomColor: themeColor, paddingBottom: 6 },
-      name: { fontSize: 20, fontFamily: "Helvetica-Bold", color: "#0f172a", marginBottom: 2 },
-      jobTitle: { fontSize: 12, fontFamily: "Helvetica-Bold", color: themeColor, marginBottom: 4 },
-      contactRow: { gap: 8, fontSize: 9 },
-      section: { marginBottom: 10 },
-      sectionTitle: { fontSize: 11, fontFamily: "Helvetica-Bold", textTransform: "uppercase", color: "#0f172a", marginBottom: 4 },
-      itemTitle: { fontSize: 10 },
-      description: { fontSize: 9, marginBottom: 6 },
-    }),
-    professional: StyleSheet.create({
-      page: { paddingTop: 35 },
-      header: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 20, borderBottomWidth: 2, borderBottomColor: "#cbd5e1", paddingBottom: 15 },
-      headerLeft: { flex: 1 },
-      headerRight: { flex: 1, alignItems: "flex-end" },
-      name: { fontSize: 22, fontFamily: "Helvetica-Bold", color: "#1e293b", marginBottom: 4 },
-      jobTitle: { fontSize: 14, color: "#475569" },
-      contactRow: { flexDirection: "column", alignItems: "flex-end", gap: 2 },
-      sectionTitle: { fontSize: 12, fontFamily: "Helvetica-Bold", color: themeColor, marginBottom: 6, backgroundColor: themeColor + "15", padding: "4" },
-    }),
-    balanced: StyleSheet.create({
-      page: { padding: 30 },
-      header: { backgroundColor: "#1e293b", padding: "30 30 20 30", margin: "-30 -30 20 -30", color: "#ffffff" },
-      name: { fontSize: 26, fontFamily: "Helvetica-Bold", color: "#ffffff", marginBottom: 6 },
-      jobTitle: { fontSize: 14, color: "#cbd5e1", marginBottom: 12 },
-      contactRow: { gap: 10, color: "#cbd5e1" },
-      sectionTitleRow: { flexDirection: "row", alignItems: "center", marginBottom: 6 },
-      sectionTitleBlock: { width: 6, height: 14, backgroundColor: themeColor, marginRight: 6 },
-      sectionTitle: { fontSize: 13, fontFamily: "Helvetica-Bold", color: "#1e293b" },
-    }),
-  };
+  const styles = buildPdfStyles(templateId, accent);
 
-  const tplStyles = templates[templateId] as any;
+  const contactParts = [
+    personalInfo.email,
+    personalInfo.phone,
+    personalInfo.location,
+    personalInfo.website,
+    personalInfo.linkedin,
+    personalInfo.github,
+  ].filter(Boolean);
+  const contactStr = contactParts.join(" · ");
 
-  const isProfessional = templateId === "professional";
-  const isBalanced = templateId === "balanced";
+  const skillsStr = skills.map((s) => s.name.trim()).filter(Boolean).join(", ");
 
-  const renderSectionTitle = (title: string) => {
-    if (isBalanced) {
-      return (
-        <View style={tplStyles.sectionTitleRow}>
-          <View style={tplStyles.sectionTitleBlock} />
-          <Text style={tplStyles.sectionTitle}>{title}</Text>
-        </View>
-      );
-    }
-    return <Text style={tplStyles.sectionTitle}>{title}</Text>;
-  };
-
-  const renderSkills = () => {
-    if (skills.length === 0) return null;
-    return (
-      <View style={tplStyles.section || base.section}>
-        {renderSectionTitle("Skills")}
-        <View style={base.skillsArray}>
-          {skills.map((skill) => (
-            <Text key={skill.id} style={templateId === "minimal" ? { fontSize: 10, padding: 2, borderBottomWidth: 1, borderBottomColor: "#e2e8f0" } : base.skillPill}>
-              {skill.name}
-            </Text>
-          ))}
-        </View>
+  const headerBlock =
+    templateId === "signature" ? (
+      <View style={styles.headerBand}>
+        <Text style={styles.name}>{personalInfo.fullName || "Your Name"}</Text>
+        {!!personalInfo.jobTitle?.trim() && <Text style={styles.jobTitle}>{personalInfo.jobTitle}</Text>}
+        {contactStr.length > 0 && <Text style={styles.contact}>{contactStr}</Text>}
+      </View>
+    ) : (
+      <View style={styles.headerRule}>
+        <Text style={[styles.name, templateId === "minimal" ? { textAlign: "center" as const } : {}]}>
+          {personalInfo.fullName || "Your Name"}
+        </Text>
+        {!!personalInfo.jobTitle?.trim() && (
+          <Text style={[styles.jobTitle, templateId === "minimal" ? { textAlign: "center" as const } : {}]}>
+            {personalInfo.jobTitle}
+          </Text>
+        )}
+        {contactStr.length > 0 && (
+          <Text style={[styles.contact, templateId === "minimal" ? { textAlign: "center" as const } : {}]}>
+            {contactStr}
+          </Text>
+        )}
       </View>
     );
-  };
 
   return (
     <Document>
-      <Page size="A4" style={[base.page, tplStyles.page]}>
-        
-        {/* Header section variations */}
-        {isProfessional ? (
-          <View style={tplStyles.header}>
-            <View style={tplStyles.headerLeft}>
-              <Text style={tplStyles.name}>{personalInfo.fullName || "Your Name"}</Text>
-              <Text style={tplStyles.jobTitle}>{personalInfo.jobTitle || "Your Job Title"}</Text>
-            </View>
-            <View style={tplStyles.headerRight}>
-               {personalInfo.email && <Text style={base.contactRow}>{personalInfo.email}</Text>}
-               {personalInfo.phone && <Text style={base.contactRow}>{personalInfo.phone}</Text>}
-               {personalInfo.location && <Text style={base.contactRow}>{personalInfo.location}</Text>}
-               {personalInfo.website && <Text style={base.contactRow}>{personalInfo.website}</Text>}
-               {personalInfo.linkedin && <Text style={base.contactRow}>{personalInfo.linkedin}</Text>}
-            </View>
-          </View>
-        ) : (
-          <View style={tplStyles.header}>
-            <Text style={tplStyles.name}>{personalInfo.fullName || "Your Name"}</Text>
-            <Text style={tplStyles.jobTitle}>{personalInfo.jobTitle || "Your Job Title"}</Text>
-            <View style={[base.contactRow, tplStyles.contactRow]}>
-              {personalInfo.email && <Text>{personalInfo.email}</Text>}
-              {personalInfo.phone && <Text>{personalInfo.phone}</Text>}
-              {personalInfo.location && <Text>{personalInfo.location}</Text>}
-              {personalInfo.website && <Text>{personalInfo.website}</Text>}
-              {personalInfo.linkedin && <Text>{personalInfo.linkedin}</Text>}
-            </View>
+      <Page size="LETTER" style={styles.page}>
+        {headerBlock}
+
+        {summary?.trim() && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Professional Summary</Text>
+            <Text style={styles.body}>{summary}</Text>
           </View>
         )}
 
-        {/* Summary */}
-        {summary && (
-          <View style={tplStyles.section || base.section}>
-            {renderSectionTitle("Professional Summary")}
-            <Text style={[base.description, tplStyles.description]}>{summary}</Text>
-          </View>
-        )}
-
-        {/* Skills explicitly bumped for professional */}
-        {isProfessional && renderSkills()}
-
-        {/* Experience */}
         {experience.length > 0 && (
-          <View style={tplStyles.section || base.section}>
-            {renderSectionTitle("Experience")}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Professional Experience</Text>
             {experience.map((exp) => (
-              <View key={exp.id} style={templateId === "minimal" ? { paddingLeft: 10, borderLeftWidth: 1, borderLeftColor: "#e2e8f0", marginBottom: 8 } : { marginBottom: 8 }}>
-                <View style={base.itemTitleRow}>
-                  <Text style={[base.itemTitle, tplStyles.itemTitle]}>{exp.jobTitle}</Text>
-                  <Text style={[base.itemDates, { color: templateId === "minimal" ? "#94a3b8" : themeColor }]}>{exp.startDate} - {exp.current ? "Present" : exp.endDate}</Text>
+              <View key={exp.id}>
+                <View style={styles.rowTitle}>
+                  <Text style={styles.itemMain}>{exp.jobTitle}</Text>
+                  <Text style={styles.itemDates}>
+                    {exp.startDate} – {exp.current ? "Present" : exp.endDate}
+                  </Text>
                 </View>
-                <View style={base.itemSubRow}>
-                  <Text style={base.itemSubtitle}>{exp.company}</Text>
-                  <Text style={base.itemLocation}>{exp.location}</Text>
+                <View style={styles.rowSub}>
+                  <Text style={styles.itemCo}>{exp.company}</Text>
+                  <Text style={styles.itemLoc}>{exp.location}</Text>
                 </View>
-                <Text style={[base.description, tplStyles.description]}>{exp.description}</Text>
+                <Text style={styles.desc}>{exp.description}</Text>
               </View>
             ))}
           </View>
         )}
 
-        {/* Education */}
         {education.length > 0 && (
-          <View style={tplStyles.section || base.section}>
-            {renderSectionTitle("Education")}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Education</Text>
             {education.map((edu) => (
-              <View key={edu.id} style={templateId === "minimal" ? { paddingLeft: 10, borderLeftWidth: 1, borderLeftColor: "#e2e8f0", marginBottom: 8 } : { marginBottom: 8 }}>
-                <View style={base.itemTitleRow}>
-                  <Text style={[base.itemTitle, tplStyles.itemTitle]}>{edu.degree}</Text>
-                  <Text style={[base.itemDates, { color: templateId === "minimal" ? "#94a3b8" : themeColor }]}>{edu.startDate} - {edu.current ? "Present" : edu.endDate}</Text>
+              <View key={edu.id}>
+                <View style={styles.rowTitle}>
+                  <Text style={styles.itemMain}>{edu.degree}</Text>
+                  <Text style={styles.itemDates}>
+                    {edu.startDate} – {edu.current ? "Present" : edu.endDate}
+                  </Text>
                 </View>
-                <View style={base.itemSubRow}>
-                  <Text style={base.itemSubtitle}>{edu.school}</Text>
-                  <Text style={base.itemLocation}>{edu.location}</Text>
+                <View style={styles.rowSub}>
+                  <Text style={styles.itemCo}>{edu.school}</Text>
+                  <Text style={styles.itemLoc}>{edu.location}</Text>
                 </View>
-                {edu.gpa && <Text style={[base.description, tplStyles.description]}>GPA: {edu.gpa}</Text>}
+                {edu.gpa?.trim() && (
+                  <Text style={[styles.desc, { marginTop: 2, marginBottom: 6 }]}>GPA: {edu.gpa}</Text>
+                )}
               </View>
             ))}
           </View>
         )}
 
-        {/* Projects */}
+        {skillsStr.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Skills</Text>
+            <Text style={styles.skillsLine}>{skillsStr}</Text>
+          </View>
+        )}
+
         {projects.length > 0 && (
-          <View style={tplStyles.section || base.section}>
-            {renderSectionTitle("Projects")}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Projects</Text>
             {projects.map((proj) => (
-              <View key={proj.id} style={templateId === "minimal" ? { paddingLeft: 10, borderLeftWidth: 1, borderLeftColor: "#e2e8f0", marginBottom: 8 } : { marginBottom: 8 }}>
-                <View style={base.itemTitleRow}>
-                  <Text style={[base.itemTitle, tplStyles.itemTitle]}>{proj.name}</Text>
-                  {proj.url && <Text style={base.itemLocation}>{proj.url}</Text>}
+              <View key={proj.id}>
+                <View style={styles.rowTitle}>
+                  <Text style={styles.itemMain}>{proj.name}</Text>
+                  {proj.url?.trim() ? <Text style={styles.itemDates}>{proj.url}</Text> : null}
                 </View>
-                <Text style={[base.description, tplStyles.description]}>{proj.description}</Text>
+                <Text style={styles.desc}>{proj.description}</Text>
               </View>
             ))}
           </View>
         )}
 
-        {/* Custom User-Defined Sections */}
-        {customSections && customSections.length > 0 && customSections.map((section) => (
-          <View key={section.id} style={tplStyles.section || base.section}>
-            {renderSectionTitle(section.title)}
-            {section.items.map((item: any) => (
-              <View key={item.id} style={templateId === "minimal" ? { paddingLeft: 10, borderLeftWidth: 1, borderLeftColor: "#e2e8f0", marginBottom: 6 } : { marginBottom: 6 }}>
-                
-                {(!item.type || item.type === "paragraph") && (
-                  <>
-                    <Text style={[base.itemTitle, tplStyles.itemTitle, { marginBottom: item.description ? 2 : 0 }]}>{item.name}</Text>
-                    {item.description && (
-                      <Text style={[base.description, tplStyles.description]}>{item.description}</Text>
-                    )}
-                  </>
-                )}
+        {customSections &&
+          customSections.length > 0 &&
+          customSections.map((section) => (
+            <View key={section.id} style={styles.section}>
+              <Text style={styles.sectionTitle}>{section.title}</Text>
+              {section.items.map((item: any) => (
+                <View key={item.id}>
+                  {(!item.type || item.type === "paragraph") && (
+                    <>
+                      <Text style={[styles.itemMain, { marginBottom: item.description ? 2 : 6 }]}>{item.name}</Text>
+                      {item.description && <Text style={styles.desc}>{item.description}</Text>}
+                    </>
+                  )}
 
-                {item.type === "bullets" && (
-                  <>
-                    <Text style={[base.itemTitle, tplStyles.itemTitle, { marginBottom: 2 }]}>{item.name}</Text>
-                    {item.description && (
-                      <View style={{ marginBottom: 4 }}>
-                        {item.description.split('\n').filter(Boolean).map((bullet: string, i: number) => (
-                          <View key={i} style={{ flexDirection: 'row', marginBottom: 2 }}>
-                            <Text style={{ fontSize: 10, color: "#334155", width: 10, textAlign: 'center' }}>•</Text>
-                            <Text style={[base.description, tplStyles.description, { flex: 1, marginBottom: 0 }]}>{bullet.trim()}</Text>
-                          </View>
-                        ))}
-                      </View>
-                    )}
-                  </>
-                )}
+                  {item.type === "bullets" && (
+                    <>
+                      <Text style={[styles.itemMain, { marginBottom: 2 }]}>{item.name}</Text>
+                      {item.description &&
+                        item.description
+                          .split("\n")
+                          .filter(Boolean)
+                          .map((line: string, i: number) => (
+                            <View key={i} style={styles.bulletRow}>
+                              <Text style={styles.bullet}>•</Text>
+                              <Text style={styles.bulletText}>{line.trim()}</Text>
+                            </View>
+                          ))}
+                    </>
+                  )}
 
-                {item.type === "progress" && (
-                  <View style={{ marginTop: 2, marginBottom: 4 }}>
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 3, width: "60%" }}>
-                      <Text style={[base.itemTitle, tplStyles.itemTitle]}>{item.name}</Text>
-                      <Text style={{ fontSize: 9, color: "#64748b", fontFamily: "Helvetica-Bold" }}>{item.value || 0}%</Text>
-                    </View>
-                    <View style={{ height: 6, backgroundColor: "#e2e8f0", borderRadius: 3, width: "60%", overflow: "hidden" }}>
-                      <View style={{ height: "100%", backgroundColor: themeColor, borderRadius: 3, width: `${item.value || 0}%` }}></View>
-                    </View>
-                  </View>
-                )}
-
-              </View>
-            ))}
-          </View>
-        ))}
-
-        {/* Skills for all other templates */}
-        {!isProfessional && renderSkills()}
-
+                  {item.type === "progress" && (
+                    <Text style={[styles.body, { marginBottom: 6 }]}>
+                      {item.name}
+                      {typeof item.value === "number" ? `: ${item.value}%` : ""}
+                    </Text>
+                  )}
+                </View>
+              ))}
+            </View>
+          ))}
       </Page>
     </Document>
   );
+}
+
+type PdfStyle = ReturnType<typeof StyleSheet.create>;
+
+function buildPdfStyles(templateId: TemplateType, accent: string): PdfStyle {
+  const base = {
+    rowTitle: {
+      flexDirection: "row" as const,
+      justifyContent: "space-between" as const,
+      alignItems: "flex-start" as const,
+      marginBottom: 2,
+    },
+    rowSub: {
+      flexDirection: "row" as const,
+      justifyContent: "space-between" as const,
+      alignItems: "flex-start" as const,
+      marginBottom: 6,
+    },
+    bulletRow: { flexDirection: "row" as const, marginBottom: 2 },
+    bullet: { width: 10, fontSize: 10 as number },
+    bulletText: { flex: 1, fontSize: 10, lineHeight: 1.45, color: "#262626" },
+  };
+
+  if (templateId === "standard") {
+    return StyleSheet.create({
+      page: {
+        padding: 40,
+        paddingBottom: 48,
+        fontFamily: "Helvetica",
+        fontSize: 10,
+        lineHeight: 1.5,
+        color: "#171717",
+      },
+      headerRule: {
+        borderBottomWidth: 1,
+        borderBottomColor: "#0a0a0a",
+        paddingBottom: 12,
+      },
+      headerBand: {},
+      name: {
+        fontSize: 22,
+        fontFamily: "Helvetica-Bold",
+        color: "#0a0a0a",
+        marginBottom: 4,
+      },
+      jobTitle: { fontSize: 11, color: "#262626", marginBottom: 0 },
+      contact: { marginTop: 10, fontSize: 10, color: "#404040", lineHeight: 1.45 },
+      section: { marginTop: 16 },
+      sectionTitle: {
+        fontSize: 9,
+        fontFamily: "Helvetica-Bold",
+        textTransform: "uppercase",
+        letterSpacing: 1.2,
+        color: "#0a0a0a",
+        borderBottomWidth: 1,
+        borderBottomColor: "#d4d4d4",
+        paddingBottom: 4,
+        marginBottom: 8,
+      },
+      body: { fontSize: 10, color: "#262626", lineHeight: 1.55 },
+      itemMain: {
+        fontSize: 10,
+        fontFamily: "Helvetica-Bold",
+        color: "#0a0a0a",
+        flex: 1,
+        paddingRight: 8,
+      },
+      itemDates: { fontSize: 9, color: "#525252", width: 120, textAlign: "right" },
+      itemCo: { fontSize: 9, fontFamily: "Helvetica-Bold", color: "#262626", flex: 1, paddingRight: 8 },
+      itemLoc: { fontSize: 9, color: "#525252", width: 140, textAlign: "right" },
+      desc: { fontSize: 10, color: "#262626", marginTop: 4, marginBottom: 4, lineHeight: 1.55 },
+      skillsLine: { fontSize: 10, color: "#262626", lineHeight: 1.5 },
+      ...base,
+      bullet: { ...base.bullet, color: "#262626" },
+    });
+  }
+
+  if (templateId === "modern") {
+    return StyleSheet.create({
+      page: {
+        padding: 42,
+        paddingBottom: 50,
+        fontFamily: "Helvetica",
+        fontSize: 10,
+        lineHeight: 1.55,
+        color: "#171717",
+      },
+      headerRule: {
+        borderBottomWidth: 1,
+        borderBottomColor: "#e5e5e5",
+        paddingBottom: 16,
+      },
+      headerBand: {},
+      name: {
+        fontSize: 23,
+        fontFamily: "Helvetica-Bold",
+        color: "#171717",
+        marginBottom: 6,
+        letterSpacing: -0.4,
+      },
+      jobTitle: { fontSize: 11, color: "#737373", marginBottom: 0, fontFamily: "Helvetica-Bold" },
+      contact: { marginTop: 14, fontSize: 10, color: "#525252", lineHeight: 1.45 },
+      section: { marginTop: 22 },
+      sectionTitle: {
+        fontSize: 10,
+        fontFamily: "Helvetica-Bold",
+        textTransform: "uppercase",
+        letterSpacing: 0.6,
+        color: "#262626",
+        borderBottomWidth: 1,
+        borderBottomColor: "#e5e5e5",
+        paddingBottom: 6,
+        marginBottom: 8,
+      },
+      body: { fontSize: 10, color: "#404040", lineHeight: 1.6 },
+      itemMain: {
+        fontSize: 10,
+        fontFamily: "Helvetica-Bold",
+        color: "#171717",
+        flex: 1,
+        paddingRight: 8,
+      },
+      itemDates: { fontSize: 9, color: "#737373", width: 120, textAlign: "right" },
+      itemCo: {
+        fontSize: 9,
+        fontFamily: "Helvetica-Bold",
+        color: "#404040",
+        flex: 1,
+        paddingRight: 8,
+      },
+      itemLoc: { fontSize: 9, color: "#737373", width: 140, textAlign: "right" },
+      desc: { fontSize: 10, color: "#404040", marginTop: 5, marginBottom: 5, lineHeight: 1.6 },
+      skillsLine: { fontSize: 10, color: "#404040", lineHeight: 1.55 },
+      ...base,
+      bullet: { ...base.bullet, color: "#404040" },
+      bulletText: { ...base.bulletText, color: "#404040" },
+    });
+  }
+
+  if (templateId === "executive") {
+    return StyleSheet.create({
+      page: {
+        padding: 40,
+        paddingBottom: 48,
+        fontFamily: "Times-Roman",
+        fontSize: 10,
+        lineHeight: 1.5,
+        color: "#171717",
+      },
+      headerRule: {
+        borderBottomWidth: 4,
+        borderBottomColor: "#0a0a0a",
+        paddingBottom: 14,
+      },
+      headerBand: {},
+      name: { fontSize: 22, fontFamily: "Times-Bold", color: "#0a0a0a", marginBottom: 4 },
+      jobTitle: { fontSize: 11, fontFamily: "Times-Bold", color: "#333", marginBottom: 0 },
+      contact: { marginTop: 10, fontSize: 10, color: "#404040", lineHeight: 1.45 },
+      section: { marginTop: 16 },
+      sectionTitle: {
+        fontSize: 11,
+        fontFamily: "Times-Bold",
+        textTransform: "uppercase",
+        letterSpacing: 0.8,
+        color: "#0a0a0a",
+        borderBottomWidth: 1,
+        borderBottomColor: "#a3a3a3",
+        paddingBottom: 4,
+        marginBottom: 8,
+      },
+      body: { fontSize: 10, color: "#262626", lineHeight: 1.55 },
+      itemMain: {
+        fontSize: 10,
+        fontFamily: "Times-Bold",
+        color: "#0a0a0a",
+        flex: 1,
+        paddingRight: 8,
+      },
+      itemDates: { fontSize: 9, color: "#525252", width: 120, textAlign: "right", fontFamily: "Times-Bold" },
+      itemCo: { fontSize: 9, fontFamily: "Times-Bold", color: "#262626", flex: 1, paddingRight: 8 },
+      itemLoc: { fontSize: 9, color: "#525252", width: 140, textAlign: "right" },
+      desc: { fontSize: 10, color: "#262626", marginTop: 4, marginBottom: 4, lineHeight: 1.55 },
+      skillsLine: { fontSize: 10, color: "#262626", lineHeight: 1.5 },
+      ...base,
+      bullet: { ...base.bullet, color: "#262626", fontFamily: "Times-Roman" },
+      bulletText: { ...base.bulletText, fontFamily: "Times-Roman" },
+    });
+  }
+
+  if (templateId === "compact") {
+    return StyleSheet.create({
+      page: {
+        padding: 28,
+        paddingBottom: 40,
+        fontFamily: "Helvetica",
+        fontSize: 9,
+        lineHeight: 1.4,
+        color: "#171717",
+      },
+      headerRule: {
+        borderBottomWidth: 1,
+        borderBottomColor: "#0a0a0a",
+        paddingBottom: 8,
+      },
+      headerBand: {},
+      name: {
+        fontSize: 17,
+        fontFamily: "Helvetica-Bold",
+        color: "#0a0a0a",
+        marginBottom: 2,
+      },
+      jobTitle: { fontSize: 9, color: "#262626", marginBottom: 0 },
+      contact: { marginTop: 6, fontSize: 8.5, color: "#525252", lineHeight: 1.35 },
+      section: { marginTop: 12 },
+      sectionTitle: {
+        fontSize: 8,
+        fontFamily: "Helvetica-Bold",
+        textTransform: "uppercase",
+        letterSpacing: 1,
+        color: "#0a0a0a",
+        borderBottomWidth: 1,
+        borderBottomColor: "#d4d4d4",
+        paddingBottom: 2,
+        marginBottom: 6,
+      },
+      body: { fontSize: 9, color: "#262626", lineHeight: 1.45 },
+      itemMain: {
+        fontSize: 9,
+        fontFamily: "Helvetica-Bold",
+        color: "#0a0a0a",
+        flex: 1,
+        paddingRight: 8,
+      },
+      itemDates: { fontSize: 8.5, color: "#525252", width: 118, textAlign: "right" },
+      itemCo: { fontSize: 8.5, fontFamily: "Helvetica-Bold", color: "#262626", flex: 1, paddingRight: 8 },
+      itemLoc: { fontSize: 8.5, color: "#525252", width: 136, textAlign: "right" },
+      desc: { fontSize: 9, color: "#262626", marginTop: 3, marginBottom: 3, lineHeight: 1.45 },
+      skillsLine: { fontSize: 9, color: "#262626", lineHeight: 1.45 },
+      ...base,
+      bullet: { width: 9, fontSize: 9, color: "#262626" },
+      bulletText: { flex: 1, fontSize: 9, lineHeight: 1.4, color: "#262626" },
+    });
+  }
+
+  if (templateId === "minimal") {
+    return StyleSheet.create({
+      page: {
+        padding: 44,
+        paddingBottom: 52,
+        fontFamily: "Helvetica",
+        fontSize: 10,
+        lineHeight: 1.6,
+        color: "#262626",
+      },
+      headerRule: {
+        borderBottomWidth: 1,
+        borderBottomColor: "#e5e5e5",
+        paddingBottom: 28,
+      },
+      headerBand: {},
+      name: {
+        fontSize: 26,
+        fontFamily: "Helvetica",
+        color: "#171717",
+        marginBottom: 6,
+        textAlign: "center",
+      },
+      jobTitle: { fontSize: 11, color: "#525252", marginBottom: 0, textAlign: "center" },
+      contact: { marginTop: 22, fontSize: 10, color: "#737373", lineHeight: 1.45, textAlign: "center" },
+      section: { marginTop: 22 },
+      sectionTitle: {
+        fontSize: 8,
+        fontFamily: "Helvetica-Bold",
+        textTransform: "uppercase",
+        letterSpacing: 2,
+        color: "#a3a3a3",
+        marginBottom: 10,
+        textAlign: "center",
+      },
+      body: { fontSize: 10, color: "#404040", lineHeight: 1.65 },
+      itemMain: {
+        fontSize: 10,
+        fontFamily: "Helvetica-Bold",
+        color: "#171717",
+        flex: 1,
+        paddingRight: 8,
+      },
+      itemDates: { fontSize: 9, color: "#737373", width: 120, textAlign: "right" },
+      itemCo: { fontSize: 9, fontFamily: "Helvetica-Bold", color: "#404040", flex: 1, paddingRight: 8 },
+      itemLoc: { fontSize: 9, color: "#737373", width: 140, textAlign: "right" },
+      desc: { fontSize: 10, color: "#404040", marginTop: 4, marginBottom: 4, lineHeight: 1.65 },
+      skillsLine: { fontSize: 10, color: "#404040", lineHeight: 1.55 },
+      ...base,
+      bullet: { ...base.bullet, color: "#404040" },
+      bulletText: { ...base.bulletText, color: "#404040" },
+    });
+  }
+
+  // signature
+  return StyleSheet.create({
+    page: {
+      padding: 40,
+      paddingBottom: 48,
+      fontFamily: "Helvetica",
+      fontSize: 10,
+      lineHeight: 1.5,
+      color: "#171717",
+    },
+    headerRule: {},
+    headerBand: {
+      backgroundColor: "#0a0a0a",
+      padding: 18,
+      marginBottom: 18,
+      borderRadius: 2,
+    },
+    name: {
+      fontSize: 21,
+      fontFamily: "Helvetica-Bold",
+      color: "#ffffff",
+      marginBottom: 4,
+    },
+    jobTitle: { fontSize: 11, color: "#d4d4d4", marginBottom: 0 },
+    contact: { marginTop: 10, fontSize: 10, color: "#a3a3a3", lineHeight: 1.45 },
+    section: { marginTop: 16 },
+    sectionTitle: {
+      fontSize: 9,
+      fontFamily: "Helvetica-Bold",
+      textTransform: "uppercase",
+      letterSpacing: 1.2,
+      color: "#0a0a0a",
+      borderBottomWidth: 1,
+      borderBottomColor: "#0a0a0a",
+      paddingBottom: 4,
+      marginBottom: 8,
+    },
+    body: { fontSize: 10, color: "#262626", lineHeight: 1.55 },
+    itemMain: {
+      fontSize: 10,
+      fontFamily: "Helvetica-Bold",
+      color: "#0a0a0a",
+      flex: 1,
+      paddingRight: 8,
+    },
+    itemDates: { fontSize: 9, color: "#525252", width: 120, textAlign: "right" },
+    itemCo: { fontSize: 9, fontFamily: "Helvetica-Bold", color: "#262626", flex: 1, paddingRight: 8 },
+    itemLoc: { fontSize: 9, color: "#525252", width: 140, textAlign: "right" },
+    desc: { fontSize: 10, color: "#262626", marginTop: 4, marginBottom: 4, lineHeight: 1.55 },
+    skillsLine: { fontSize: 10, color: "#262626", lineHeight: 1.5 },
+    ...base,
+    bullet: { ...base.bullet, color: "#262626" },
+  });
 }

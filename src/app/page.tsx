@@ -1,7 +1,6 @@
 "use client";
 
 import { useResumeStore } from "@/store/useResumeStore";
-import { Stepper } from "@/components/builder/Stepper";
 import { PersonalInfoForm } from "@/components/builder/forms/PersonalInfoForm";
 import { ProfessionalSummaryForm } from "@/components/builder/forms/SummaryForm";
 import { WorkExperienceForm } from "@/components/builder/forms/WorkExperienceForm";
@@ -10,18 +9,18 @@ import { SkillsAndExtrasForm } from "@/components/builder/forms/SkillsAndExtrasF
 import { ReviewAndFinalize } from "@/components/builder/forms/ReviewAndFinalize";
 import { LivePreview } from "@/components/builder/preview/LivePreview";
 import { useEffect, useState } from "react";
-import { FileText, Eye, X, RotateCcw } from "lucide-react";
+import { Eye, X } from "lucide-react";
 import { DynamicTemplate } from "@/components/builder/templates/DynamicTemplate";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+
+const TOTAL_FLOW_STEPS = 6;
 
 export default function BuilderPage() {
   const currentStep = useResumeStore((state) => state.currentStep);
-  const themeColor = useResumeStore((state) => state.themeColor);
-  const setThemeColor = useResumeStore((state) => state.setThemeColor);
   const template = useResumeStore((state) => state.template);
-  const resetStore = useResumeStore((state) => state.resetStore);
   const [mounted, setMounted] = useState(false);
   const [mobilePreviewOpen, setMobilePreviewOpen] = useState(false);
-  const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -48,93 +47,89 @@ export default function BuilderPage() {
     }
   };
 
+  const flowProgressPercent = Math.min(
+    100,
+    Math.max(0, (currentStep / TOTAL_FLOW_STEPS) * 100)
+  );
+
   return (
-    <div 
-      className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col transition-colors duration-300"
-      style={{ '--primary': themeColor } as React.CSSProperties}
-    >
-      {/* Navbar specific to Builder */}
-      <header className="sticky top-0 z-50 w-full glass-nav bg-white/70 dark:bg-slate-950/70 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-800/50">
-        <div className="container mx-auto px-4 py-3 md:py-0 md:h-16 flex flex-wrap md:flex-nowrap items-center justify-between gap-y-3">
-          <div className="flex items-center text-primary font-bold md:w-1/4 order-1 md:order-1">
-            <span>My Simple Resume</span>
-          </div>
-          
-          <div className="w-full md:w-auto md:flex-1 flex justify-center order-3 md:order-2 mt-2 md:mt-0">
-            <Stepper />
-          </div>
-          
-          <div className="md:w-1/4 flex justify-end items-center gap-2 sm:gap-3 order-2 md:order-3">
-            <button 
-              onClick={() => setResetConfirmOpen(true)}
-              className="text-slate-400 hover:text-red-500 transition-colors p-2 rounded-full hover:bg-red-50 dark:hover:bg-red-950/30"
-              title="Reset Resume Data"
-            >
-              <RotateCcw className="w-5 h-5 sm:w-6 sm:h-6" />
-            </button>
-            <div className="w-px h-6 bg-slate-200 dark:bg-slate-700 mx-1 sm:mx-0" />
-            <span className="text-xs font-medium text-slate-500 hidden sm:block">Theme</span>
-            <div className="relative w-8 h-8 rounded-full border border-slate-300 dark:border-slate-700 overflow-hidden shadow-sm hover:scale-110 transition-transform">
-              <input 
-                type="color" 
-                value={themeColor}
-                onChange={(e) => setThemeColor(e.target.value)}
-                className="absolute inset-0 w-16 h-16 -top-2 -left-2 cursor-pointer"
-                title="Change Theme Color"
-              />
-            </div>
-          </div>
+    <div className="flex min-h-[100dvh] min-h-screen flex-col bg-background text-foreground transition-colors duration-300">
+      <header className="sticky top-0 z-50 w-full border-b border-white/[0.08] bg-black/70 backdrop-blur-xl supports-[backdrop-filter]:bg-black/55">
+        <div className="mx-auto flex w-full max-w-[min(1320px,calc(100vw-2rem))] flex-nowrap items-center gap-4 px-4 py-3 sm:px-6 md:h-16 md:py-0">
+          <span className="font-heading min-w-0 flex-1 truncate text-xl font-medium tracking-[-0.06em] text-white sm:text-2xl">
+            My Simple Resume
+          </span>
         </div>
       </header>
-      
-      <main className="flex-1 container mx-auto px-4 py-8">
-        <div className="w-full">
-          
-          <div className="flex flex-col lg:flex-row items-start gap-8 mt-4 relative">
-            {/* Left Column: Form Controls */}
-            <div className="w-full lg:w-[40%] transition-all duration-300 lg:h-[calc(100vh-8rem)] lg:overflow-y-auto lg:custom-scrollbar lg:pb-12 lg:pr-2">
-              {renderFormStep()}
-            </div>
 
-            {/* Right Column: Live Preview (Always visible on desktop) */}
-            <div className="w-full lg:w-[60%] hidden lg:block">
-              <LivePreview />
-            </div>
+      {/* Flow progress: gradient fills left → right like a loader */}
+      <div
+        className="relative h-1 w-full shrink-0 overflow-hidden"
+        role="progressbar"
+        aria-valuenow={currentStep}
+        aria-valuemin={1}
+        aria-valuemax={TOTAL_FLOW_STEPS}
+        aria-label={`Resume builder progress, step ${currentStep} of ${TOTAL_FLOW_STEPS}`}
+      >
+        <div className="absolute inset-0 bg-white/[0.08]" aria-hidden />
+        <div
+          className="absolute inset-y-0 left-0 flow-progress-gradient transition-[width] duration-700 ease-out"
+          style={{ width: `${flowProgressPercent}%` }}
+          aria-hidden
+        />
+      </div>
+
+      <main className="scrollbar-none flex min-h-0 flex-1 overflow-x-clip border-b border-black px-4 pt-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:px-6 sm:pb-6 lg:overflow-x-auto lg:pb-6">
+        <div
+          className={cn(
+            "mx-auto grid w-full max-w-[min(1320px,calc(100vw-2rem))] gap-x-10 gap-y-8 lg:items-start lg:justify-center",
+            currentStep === 6 ? "lg:grid-cols-2" : "lg:grid-cols-[440px_minmax(816px,1fr)]"
+          )}
+        >
+          <div
+            className={cn(
+              "custom-scrollbar min-w-0 self-start transition-all duration-300 lg:h-[calc(100vh-8rem)] lg:overflow-y-auto lg:pb-12",
+              currentStep === 6
+                ? "w-full"
+                : "mx-auto w-full max-w-[440px] justify-self-start lg:mx-0 lg:w-full lg:max-w-none"
+            )}
+          >
+            {renderFormStep()}
           </div>
 
-          {/* Remove the inline mobile Live Preview block that caused extreme length */}
+          <div className="hidden min-h-0 min-w-0 justify-self-start lg:block">
+            <LivePreview />
+          </div>
         </div>
       </main>
 
       {/* Floating View Preview Button for Mobile */}
-      <div className="fixed bottom-6 right-6 lg:hidden z-40">
-        <button 
-          onClick={() => setMobilePreviewOpen(true)}
-          className="bg-slate-900 text-white dark:bg-primary shadow-2xl rounded-full h-14 px-6 flex items-center justify-center gap-2 hover:scale-105 transition-transform"
-        >
-          <Eye className="w-5 h-5" /> 
-          <span className="font-semibold">Preview</span>
-        </button>
+      <div className="fixed bottom-6 right-6 z-40 lg:hidden">
+        <Button type="button" size="lg" onClick={() => setMobilePreviewOpen(true)} className="gap-2 shadow-none">
+          <Eye className="size-5" />
+          <span>Preview</span>
+        </Button>
       </div>
 
       {/* Mobile Full-Screen Preview Overlay */}
       {mobilePreviewOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-end justify-center px-3 pb-6 pt-24 lg:hidden">
-          <div className="bg-white dark:bg-slate-900 w-full h-full rounded-[2rem] rounded-b-[1.5rem] shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-12 fade-in duration-300">
-            <div className="flex justify-between items-center p-4 border-b border-slate-100 dark:border-slate-800">
-              <h3 className="font-bold text-lg text-slate-800 dark:text-slate-100 ml-2">Live Preview</h3>
-              <button 
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 px-3 pb-6 pt-24 backdrop-blur-md lg:hidden">
+          <div className="flex h-full w-full flex-col overflow-hidden rounded-xl border border-white/[0.12] bg-card text-card-foreground shadow-framer-float animate-in slide-in-from-bottom-12 fade-in duration-300 ring-1 ring-[rgba(0,153,255,0.15)]">
+            <div className="flex items-center justify-between border-b border-white/[0.08] p-4">
+              <h3 className="font-heading ml-2 text-lg font-medium tracking-[-0.04em]">Live Preview</h3>
+              <button
+                type="button"
                 onClick={() => setMobilePreviewOpen(false)}
-                className="w-10 h-10 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center text-slate-500 hover:bg-slate-200"
+                className="flex size-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-muted-foreground transition-colors hover:bg-white/10 hover:text-foreground"
               >
-                 <X className="w-5 h-5" />
+                <X className="size-5" />
               </button>
             </div>
-            <div className="relative flex-1 overflow-y-auto overflow-x-hidden bg-slate-800">
+            <div className="custom-scrollbar relative flex-1 overflow-y-auto overflow-x-hidden bg-black">
               {/* Absolute dead centering guarantees perfect alignment regardless of scaling overflows */}
               <div className="absolute left-[50%] top-4 -translate-x-1/2 origin-top scale-[0.42] sm:scale-[0.5] md:scale-[0.6] transition-transform duration-300">
                 <div className="w-[816px] h-[1056px] shadow-2xl bg-white">
-                  <DynamicTemplate templateId={template} showPageBreaks={true} />
+                  <DynamicTemplate templateId={template} showPageBreaks={true} bareCanvas />
                 </div>
               </div>
               
@@ -147,32 +142,6 @@ export default function BuilderPage() {
         </div>
       )}
 
-      {/* Reset Confirmation Modal */}
-      {resetConfirmOpen && (
-        <div className="fixed inset-0 z-[60] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 w-full max-w-sm rounded-[2rem] shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200 p-8 text-center ring-1 ring-red-500/20">
-            <h3 className="font-extrabold text-2xl text-slate-800 dark:text-slate-100 mb-3">Clear Everything?</h3>
-            <p className="text-slate-500 text-sm mb-8 leading-relaxed">This will permanently delete all your inputted data, skills, and experience returning you to a completely blank slate. <strong className="text-red-500 font-medium">This cannot be undone.</strong></p>
-            <div className="flex flex-col sm:flex-row gap-3 w-full">
-               <button 
-                 onClick={() => setResetConfirmOpen(false)}
-                 className="flex-1 px-4 py-3.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold rounded-2xl hover:bg-slate-200 transition-colors"
-               >
-                 Cancel
-               </button>
-               <button 
-                 onClick={() => {
-                   resetStore();
-                   setResetConfirmOpen(false);
-                 }}
-                 className="flex-1 px-4 py-3.5 bg-primary text-white font-bold rounded-2xl hover:bg-primary/90 shadow-lg shadow-primary/30 transition-all hover:-translate-y-0.5"
-               >
-                 Yes, Reset
-               </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

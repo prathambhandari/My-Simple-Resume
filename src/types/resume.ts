@@ -84,8 +84,14 @@ export type CustomItem = z.infer<typeof customItemSchema>;
 export type CustomSection = z.infer<typeof customSectionSchema>;
 export type ResumeData = z.infer<typeof resumeDataSchema>;
 
-// Default Template Types
-export type TemplateType = "classic" | "minimal" | "executive" | "compact" | "professional" | "balanced";
+/** Resume layout variants (preview + PDF). All stay single-column with plain-text contact for ATS safety. */
+export type TemplateType =
+  | "standard"
+  | "modern"
+  | "executive"
+  | "compact"
+  | "minimal"
+  | "signature";
 
 export const defaultResumeData: ResumeData = {
   personalInfo: {

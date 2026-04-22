@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { ResumeData, defaultResumeData, TemplateType } from '@/types/resume';
+import { isValidTemplateId } from '@/lib/resumeTemplates';
 
 interface ResumeState {
   data: ResumeData;
@@ -21,8 +22,8 @@ export const useResumeStore = create<ResumeState>()(
     (set) => ({
       data: defaultResumeData,
       currentStep: 1,
-      template: 'classic',
-      themeColor: '#ef233c',
+      template: 'standard',
+      themeColor: '#0099ff',
       
       updateData: (partialData) => 
         set((state) => ({ 
@@ -43,10 +44,15 @@ export const useResumeStore = create<ResumeState>()(
       
       setThemeColor: (color) => set({ themeColor: color }),
       
-      resetStore: () => set({ data: defaultResumeData, currentStep: 1, template: 'classic', themeColor: '#ef233c' }),
+      resetStore: () => set({ data: defaultResumeData, currentStep: 1, template: 'standard', themeColor: '#0099ff' }),
     }),
     {
       name: 'glassforge-resume-storage', // key in local storage
+      onRehydrateStorage: () => (state) => {
+        if (state && !isValidTemplateId(state.template)) {
+          state.template = 'standard';
+        }
+      },
     }
   )
 );

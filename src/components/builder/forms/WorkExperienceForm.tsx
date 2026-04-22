@@ -63,11 +63,11 @@ export function WorkExperienceForm() {
   };
   
   return (
-    <Card className="glass-card bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border-white/40 dark:border-slate-800 shadow-sm border-0">
-      <CardContent className="p-6 md:p-8">
+    <Card className="overflow-visible rounded-none border-none bg-transparent shadow-none ring-0">
+      <CardContent className="p-5 md:p-6">
         <div className="mb-6">
-          <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100">Work Experience</h2>
-          <p className="text-slate-500 text-sm mt-1">List your relevant experience, starting with the most recent.</p>
+          <span className="text-mono-label text-muted-foreground">Step 3</span>
+          <h2 className="font-heading mt-2 text-2xl font-medium tracking-[-0.06em] text-foreground">Work experience</h2>
         </div>
 
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
@@ -75,20 +75,20 @@ export function WorkExperienceForm() {
             const isCurrent = form.watch(`experience.${index}.current`);
             
             return (
-              <div key={field.id} className="p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-slate-800/50 relative group">
+              <div key={field.id} className="relative group rounded-lg border border-white/[0.08] bg-white/[0.04] p-4">
                 <Button 
                   type="button" 
                   variant="ghost" 
                   size="icon" 
-                  className="absolute top-2 right-2 text-slate-400 hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="absolute top-2 right-2 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
                   onClick={() => remove(index)}
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                <div className="mt-2 grid grid-cols-1 gap-4">
                   <div className="space-y-2">
-                    <Label>Job Title <span className="text-red-500">*</span></Label>
+                    <Label>Job Title <span className="text-destructive font-[540]">*</span></Label>
                     <Input placeholder="Software Engineer" {...form.register(`experience.${index}.jobTitle`)} />
                     {form.formState.errors.experience?.[index]?.jobTitle && (
                       <p className="text-sm text-destructive">{form.formState.errors.experience[index]?.jobTitle?.message}</p>
@@ -96,15 +96,15 @@ export function WorkExperienceForm() {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label>Company <span className="text-red-500">*</span></Label>
+                    <Label>Company <span className="text-destructive font-[540]">*</span></Label>
                     <Input placeholder="Acme Corp" {...form.register(`experience.${index}.company`)} />
                     {form.formState.errors.experience?.[index]?.company && (
                       <p className="text-sm text-destructive">{form.formState.errors.experience[index]?.company?.message}</p>
                     )}
                   </div>
 
-                  <div className="space-y-2 md:col-span-2">
-                    <Label>Location <span className="text-red-500">*</span></Label>
+                  <div className="space-y-2">
+                    <Label>Location <span className="text-destructive font-[540]">*</span></Label>
                     <Input placeholder="San Francisco, CA" {...form.register(`experience.${index}.location`)} />
                     {form.formState.errors.experience?.[index]?.location && (
                       <p className="text-sm text-destructive">{form.formState.errors.experience[index]?.location?.message}</p>
@@ -112,7 +112,7 @@ export function WorkExperienceForm() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Start Date <span className="text-red-500">*</span></Label>
+                    <Label>Start Date <span className="text-destructive font-[540]">*</span></Label>
                     <Input placeholder="MM/YYYY" {...form.register(`experience.${index}.startDate`)} />
                     {form.formState.errors.experience?.[index]?.startDate && (
                       <p className="text-sm text-destructive">{form.formState.errors.experience[index]?.startDate?.message}</p>
@@ -124,7 +124,7 @@ export function WorkExperienceForm() {
                     <Input placeholder="MM/YYYY" disabled={isCurrent} {...form.register(`experience.${index}.endDate`)} />
                   </div>
 
-                  <div className="flex items-center space-x-2 md:col-span-2 my-2">
+                  <div className="my-2 flex items-center space-x-2">
                     <Switch 
                       checked={isCurrent}
                       onCheckedChange={(val) => {
@@ -135,8 +135,8 @@ export function WorkExperienceForm() {
                     <Label className="cursor-pointer">I currently work here</Label>
                   </div>
 
-                  <div className="space-y-2 md:col-span-2">
-                    <Label>Description <span className="text-red-500">*</span></Label>
+                  <div className="space-y-2">
+                    <Label>Description <span className="text-destructive font-[540]">*</span></Label>
                     <Textarea 
                       placeholder="Describe your achievements and responsibilities..." 
                       className="min-h-[120px]"
@@ -152,30 +152,34 @@ export function WorkExperienceForm() {
           })}
 
           {fields.length === 0 && (
-            <div className="text-center p-8 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl">
-              <p className="text-slate-500 mb-4">No experience entries added yet.</p>
+            <div className="border-none bg-transparent px-0 py-4 text-center">
+              <p className="mb-4 text-sm font-[330] tracking-[-0.1px] text-muted-foreground">
+                No experience entries added yet.
+              </p>
               <Button type="button" variant="outline" onClick={addExperience}>
-                <Plus className="w-4 h-4 mr-2" /> Add Experience
+                <Plus className="mr-2 h-4 w-4" /> Add Experience
               </Button>
             </div>
           )}
 
           {fields.length > 0 && (
-            <Button type="button" variant="outline" className="w-full border-dashed" onClick={addExperience}>
+            <Button type="button" variant="outline" className="w-full border-border" onClick={addExperience}>
               <Plus className="w-4 h-4 mr-2" /> Add Another Experience
             </Button>
           )}
 
-          <div className="flex justify-between pt-6 border-t border-slate-200 dark:border-slate-800">
-            <Button type="button" variant="outline" onClick={prevStep}>
-              Back
-            </Button>
-            <Button 
-              type="submit" 
-              className="px-8 shadow-md hover:shadow-lg transition-all"
-            >
-              Save & Next Step
-            </Button>
+          <div className="form-action-bleed pt-6">
+            <div className="flex justify-between gap-4">
+              <Button type="button" variant="outline" onClick={prevStep}>
+                Back
+              </Button>
+              <Button
+                type="submit"
+                className="min-w-[160px] px-8 transition-opacity hover:opacity-95"
+              >
+                Save & Next Step
+              </Button>
+            </div>
           </div>
         </form>
       </CardContent>

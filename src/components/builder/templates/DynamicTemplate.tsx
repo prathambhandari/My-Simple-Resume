@@ -1,297 +1,339 @@
 "use client";
 
 import { useResumeStore } from "@/store/useResumeStore";
-import { Mail, Phone, MapPin, Globe, Link } from "lucide-react";
-import { TemplateType } from "@/types/resume";
+import type { TemplateType } from "@/types/resume";
+import { cn } from "@/lib/utils";
 
-export function DynamicTemplate({ templateId, showPageBreaks = false }: { templateId: TemplateType, showPageBreaks?: boolean }) {
+type WebTpl = {
+  pad: string;
+  root: string;
+  header: string;
+  name: string;
+  job: string;
+  contact: string;
+  section: string;
+  sectionTitle: string;
+  itemTitle: string;
+  dates: string;
+  company: string;
+  location: string;
+  desc: string;
+  skills: string;
+  projectUrl: string;
+  entrySpacing: string;
+};
+
+const WEB_BY_ID: Record<TemplateType, WebTpl> = {
+  standard: {
+    pad: "px-14 pb-14 pt-12",
+    root: "font-sans text-neutral-900 antialiased",
+    header: "border-b border-neutral-900 pb-5",
+    name: "text-[28px] font-bold leading-tight tracking-tight text-neutral-950",
+    job: "mt-1.5 text-[15px] font-normal leading-snug text-neutral-800",
+    contact: "mt-4 text-[13px] leading-relaxed text-neutral-700",
+    section: "mt-7",
+    sectionTitle:
+      "mb-3 border-b border-neutral-300 pb-1 text-xs font-bold uppercase tracking-[0.14em] text-neutral-900",
+    itemTitle: "text-[13px] font-bold text-neutral-950",
+    dates: "text-[12px] shrink-0 text-neutral-600",
+    company: "text-[12px] font-semibold text-neutral-800",
+    location: "text-[12px] text-neutral-600",
+    desc: "mt-2 text-[12px] leading-[1.65] text-neutral-800 whitespace-pre-wrap",
+    skills: "text-[12px] leading-relaxed text-neutral-800",
+    projectUrl: "text-[11px] break-all text-neutral-600",
+    entrySpacing: "space-y-5",
+  },
+  modern: {
+    pad: "px-14 pb-14 pt-12",
+    root: "font-sans text-neutral-900 antialiased",
+    header: "border-b border-neutral-200 pb-7",
+    name: "text-[30px] font-semibold leading-[1.15] tracking-[-0.035em] text-neutral-900",
+    job: "mt-3 text-[15px] font-medium leading-snug text-neutral-500",
+    contact: "mt-6 text-[13px] leading-relaxed text-neutral-600",
+    section: "mt-9",
+    sectionTitle:
+      "mb-3 border-b border-neutral-200 pb-2 text-sm font-semibold tracking-tight text-neutral-800 uppercase",
+    itemTitle: "text-[13px] font-semibold text-neutral-950",
+    dates: "text-[12px] shrink-0 text-neutral-500",
+    company: "text-[12px] font-medium text-neutral-800",
+    location: "text-[12px] text-neutral-500",
+    desc: "mt-2.5 text-[12px] leading-[1.7] text-neutral-700 whitespace-pre-wrap",
+    skills: "text-[12px] leading-relaxed text-neutral-700",
+    projectUrl: "text-[11px] break-all text-neutral-500",
+    entrySpacing: "space-y-6",
+  },
+  executive: {
+    pad: "px-14 pb-14 pt-12",
+    root: "font-serif text-neutral-900 antialiased",
+    header: "border-b-4 border-neutral-900 pb-5",
+    name: "text-[26px] font-bold leading-tight tracking-tight text-neutral-950",
+    job: "mt-2 text-[15px] font-semibold leading-snug text-neutral-800",
+    contact: "mt-4 text-[13px] leading-relaxed text-neutral-700",
+    section: "mt-7",
+    sectionTitle:
+      "mb-3 border-b border-neutral-400 pb-1.5 text-sm font-bold uppercase tracking-[0.08em] text-neutral-900",
+    itemTitle: "text-[13px] font-bold text-neutral-950",
+    dates: "text-[12px] shrink-0 text-neutral-600",
+    company: "text-[12px] font-semibold text-neutral-800",
+    location: "text-[12px] text-neutral-600",
+    desc: "mt-2 text-[12px] leading-[1.65] text-neutral-800 whitespace-pre-wrap",
+    skills: "text-[12px] leading-relaxed text-neutral-800",
+    projectUrl: "text-[11px] break-all text-neutral-600",
+    entrySpacing: "space-y-5",
+  },
+  compact: {
+    pad: "px-10 pb-10 pt-9",
+    root: "font-sans text-[11px] text-neutral-900 antialiased leading-snug",
+    header: "border-b border-neutral-900 pb-3",
+    name: "text-[20px] font-bold leading-tight text-neutral-950",
+    job: "mt-1 text-[12px] font-semibold text-neutral-800",
+    contact: "mt-2 text-[10px] leading-relaxed text-neutral-700",
+    section: "mt-5",
+    sectionTitle:
+      "mb-2 border-b border-neutral-300 pb-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-neutral-900",
+    itemTitle: "text-[11px] font-bold text-neutral-950",
+    dates: "text-[10px] shrink-0 text-neutral-600",
+    company: "text-[11px] font-semibold text-neutral-800",
+    location: "text-[10px] text-neutral-600",
+    desc: "mt-1.5 text-[11px] leading-[1.55] text-neutral-800 whitespace-pre-wrap",
+    skills: "text-[11px] leading-relaxed text-neutral-800",
+    projectUrl: "text-[10px] break-all text-neutral-600",
+    entrySpacing: "space-y-3.5",
+  },
+  minimal: {
+    pad: "px-14 pb-16 pt-14",
+    root: "font-sans text-neutral-900 antialiased",
+    header: "border-b border-neutral-200 pb-10 text-center",
+    name: "text-4xl font-light tracking-[0.02em] text-neutral-900",
+    job: "mt-4 text-base font-normal text-neutral-600",
+    contact: "mt-8 text-[13px] leading-relaxed text-neutral-500",
+    section: "mt-12",
+    sectionTitle:
+      "mb-5 text-center text-[10px] font-semibold uppercase tracking-[0.28em] text-neutral-400",
+    itemTitle: "text-[13px] font-semibold text-neutral-950",
+    dates: "text-[12px] shrink-0 text-neutral-500",
+    company: "text-[12px] font-medium text-neutral-700",
+    location: "text-[12px] text-neutral-500",
+    desc: "mt-2 text-[12px] leading-[1.75] text-neutral-700 whitespace-pre-wrap",
+    skills: "text-[12px] leading-relaxed text-neutral-700",
+    projectUrl: "text-[11px] break-all text-neutral-500",
+    entrySpacing: "space-y-6",
+  },
+  signature: {
+    pad: "px-14 pb-14 pt-12",
+    root: "font-sans text-neutral-900 antialiased",
+    header:
+      "rounded-sm bg-neutral-950 px-6 py-5 text-white shadow-sm",
+    name: "text-[26px] font-bold tracking-tight text-white",
+    job: "mt-2 text-[15px] font-normal text-neutral-300",
+    contact: "mt-4 text-[13px] leading-relaxed text-neutral-400",
+    section: "mt-8",
+    sectionTitle:
+      "mb-3 border-b border-neutral-900 pb-1 text-xs font-bold uppercase tracking-[0.14em] text-neutral-900",
+    itemTitle: "text-[13px] font-bold text-neutral-950",
+    dates: "text-[12px] shrink-0 text-neutral-600",
+    company: "text-[12px] font-semibold text-neutral-800",
+    location: "text-[12px] text-neutral-600",
+    desc: "mt-2 text-[12px] leading-[1.65] text-neutral-800 whitespace-pre-wrap",
+    skills: "text-[12px] leading-relaxed text-neutral-800",
+    projectUrl: "text-[11px] break-all text-neutral-600",
+    entrySpacing: "space-y-5",
+  },
+};
+
+export function DynamicTemplate({
+  templateId,
+  showPageBreaks = false,
+  bareCanvas = false,
+}: {
+  templateId: TemplateType;
+  showPageBreaks?: boolean;
+  bareCanvas?: boolean;
+}) {
+  const tpl = WEB_BY_ID[templateId];
   const { data } = useResumeStore();
   const { personalInfo, summary, experience, education, skills, projects, customSections } = data;
 
-  // Configuration objects for different templates
-  const styles = {
-    classic: {
-      container: "font-sans",
-      header: "border-b-2 border-primary pb-6 mb-6 text-left",
-      name: "text-4xl font-bold text-slate-900 uppercase mb-1",
-      sectionTitle: "text-lg font-bold text-slate-900 uppercase mb-3",
-      contactIcon: "text-primary",
-      jobTitle: "text-xl text-primary font-medium",
-    },
-    minimal: {
-      container: "font-sans font-light",
-      header: "pb-8 mb-8 text-center",
-      name: "text-5xl font-light tracking-wide text-slate-800 mb-2",
-      sectionTitle: "text-md font-medium tracking-widest text-slate-400 uppercase mb-4",
-      contactIcon: "text-slate-400",
-      jobTitle: "text-lg text-slate-500 font-light tracking-wider",
-    },
-    executive: {
-      container: "font-serif",
-      header: "border-b-4 border-slate-900 pb-4 mb-6 text-center bg-slate-50 p-6 rounded-sm",
-      name: "text-4xl font-extrabold text-slate-900 tracking-tight mb-2",
-      sectionTitle: "text-xl font-bold text-slate-900 mb-3 border-b-2 border-slate-200 pb-1",
-      contactIcon: "text-slate-600",
-      jobTitle: "text-xl text-slate-700 font-semibold",
-    },
-    compact: {
-      container: "font-sans text-sm",
-      header: "border-b border-primary pb-2 mb-3 text-left",
-      name: "text-2xl font-bold text-slate-900 mb-1",
-      sectionTitle: "text-md font-bold text-slate-800 uppercase mb-2",
-      contactIcon: "text-primary",
-      jobTitle: "text-md text-primary font-medium",
-    },
-    professional: {
-      container: "font-sans",
-      header: "flex justify-between items-end border-b-2 border-slate-300 pb-6 mb-6",
-      name: "text-3xl font-bold text-slate-800 mb-1",
-      sectionTitle: "text-lg font-bold text-primary mb-3 bg-primary/5 p-1 px-2 rounded-sm",
-      contactIcon: "text-slate-400",
-      jobTitle: "text-lg text-slate-600 font-medium",
-    },
-    balanced: {
-      container: "font-sans",
-      header: "bg-slate-800 text-white p-6 -mx-8 -mt-8 mb-6 rounded-b-[2rem]",
-      name: "text-4xl font-bold text-white mb-1",
-      sectionTitle: "text-lg font-bold text-slate-800 mb-3 flex items-center gap-2",
-      contactIcon: "text-slate-300",
-      jobTitle: "text-xl text-slate-200 font-medium",
-    }
-  }[templateId];
-
-  // Logic to reorder sections if template requires it
-  const isProfessional = templateId === "professional";
-
-  const renderSkills = () => {
-    if (skills.length === 0) return null;
-    return (
-      <section className="mb-6">
-        <h2 className={styles.sectionTitle}>
-          {templateId === "balanced" && <div className="w-2 h-6 bg-primary rounded-sm" />}
-          Skills
-        </h2>
-        <div className="flex flex-wrap gap-2">
-          {skills.map((skill) => (
-            <span 
-              key={skill.id} 
-              className={`text-sm px-2 py-1 ${templateId === "minimal" ? "border-b border-slate-200" : "bg-slate-100 rounded text-slate-700"}`}
-            >
-              {skill.name}
-            </span>
-          ))}
-        </div>
-      </section>
-    );
-  };
+  const contactLine = [
+    personalInfo.email,
+    personalInfo.phone,
+    personalInfo.location,
+    personalInfo.website,
+    personalInfo.linkedin,
+    personalInfo.github,
+  ]
+    .filter(Boolean)
+    .join(" · ");
 
   return (
-    <div className={`relative bg-white text-slate-800 p-8 min-h-[1056px] shadow-sm w-full max-w-[816px] mx-auto scale-[0.8] origin-top md:scale-100 ${styles.container}`}>
-      {/* Header */}
-      <header className={styles.header}>
-        <div className={templateId === "professional" ? "flex-1" : ""}>
-          <h1 className={styles.name}>{personalInfo.fullName || "Your Name"}</h1>
-          <p className={styles.jobTitle}>{personalInfo.jobTitle || "Your Job Title"}</p>
-        </div>
-        
-        <div className={`flex flex-wrap gap-x-4 gap-y-2 text-sm max-w-lg ${templateId === "balanced" ? "text-slate-200 mt-4" : "text-slate-600"} ${templateId === "minimal" || templateId === "executive" ? "justify-center mt-3" : "mt-2"}`}>
-          {personalInfo.email && (
-             <div className="flex items-center gap-1">
-               <Mail className={`w-4 h-4 ${styles.contactIcon}`} />
-               <span>{personalInfo.email}</span>
-             </div>
-          )}
-          {personalInfo.phone && (
-             <div className="flex items-center gap-1">
-               <Phone className={`w-4 h-4 ${styles.contactIcon}`} />
-               <span>{personalInfo.phone}</span>
-             </div>
-          )}
-          {personalInfo.location && (
-             <div className="flex items-center gap-1">
-               <MapPin className={`w-4 h-4 ${styles.contactIcon}`} />
-               <span>{personalInfo.location}</span>
-             </div>
-          )}
-          {personalInfo.website && (
-             <div className="flex items-center gap-1">
-               <Globe className={`w-4 h-4 ${styles.contactIcon}`} />
-               <span>{personalInfo.website}</span>
-             </div>
-          )}
-          {personalInfo.linkedin && (
-             <div className="flex items-center gap-1">
-               <Link className={`w-4 h-4 ${styles.contactIcon}`} />
-               <span>{personalInfo.linkedin}</span>
-             </div>
-          )}
-        </div>
+    <div
+      className={cn(
+        "relative min-h-[1056px] origin-top",
+        tpl.pad,
+        tpl.root,
+        bareCanvas
+          ? "w-[816px] shrink-0 border border-border bg-transparent shadow-none"
+          : "mx-auto w-full max-w-[816px] scale-[0.8] bg-white shadow-sm md:scale-100"
+      )}
+    >
+      <header className={tpl.header}>
+        <h1 className={tpl.name}>{personalInfo.fullName || "Your Name"}</h1>
+        {(personalInfo.jobTitle || "").trim().length > 0 && (
+          <p className={tpl.job}>{personalInfo.jobTitle}</p>
+        )}
+        {contactLine && <p className={tpl.contact}>{contactLine}</p>}
       </header>
 
-      {/* Summary */}
-      {summary && (
-        <section className="mb-6">
-          <h2 className={styles.sectionTitle}>
-            {templateId === "balanced" && <div className="w-2 h-6 bg-primary rounded-sm" />}
-            Professional Summary
-          </h2>
-          <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">{summary}</p>
+      {summary?.trim() && (
+        <section className={tpl.section}>
+          <h2 className={tpl.sectionTitle}>Professional Summary</h2>
+          <p className={cn(tpl.desc, "mt-0 whitespace-pre-wrap")}>{summary}</p>
         </section>
       )}
 
-      {/* Skills at Top for Professional */}
-      {isProfessional && renderSkills()}
-
-      {/* Experience */}
       {experience.length > 0 && (
-        <section className="mb-6">
-          <h2 className={styles.sectionTitle}>
-            {templateId === "balanced" && <div className="w-2 h-6 bg-primary rounded-sm" />}
-            Experience
-          </h2>
-          <div className="space-y-4">
+        <section className={tpl.section}>
+          <h2 className={tpl.sectionTitle}>Professional Experience</h2>
+          <div className={tpl.entrySpacing}>
             {experience.map((exp) => (
-              <div key={exp.id} className={templateId === "minimal" ? "border-l-2 border-slate-200 pl-4 py-1" : ""}>
-                <div className="flex justify-between items-baseline mb-1">
-                  <h3 className="font-bold text-slate-800">{exp.jobTitle}</h3>
-                  <span className={`text-sm font-medium ${templateId === "minimal" ? "text-slate-400" : "text-primary"}`}>
-                    {exp.startDate} - {exp.current ? "Present" : exp.endDate}
+              <div key={exp.id}>
+                <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                  <h3 className={tpl.itemTitle}>{exp.jobTitle}</h3>
+                  <span className={tpl.dates}>
+                    {exp.startDate} – {exp.current ? "Present" : exp.endDate}
                   </span>
                 </div>
-                <div className="flex justify-between items-baseline mb-2">
-                  <span className={`text-sm font-semibold ${templateId === "executive" ? "text-slate-900" : "text-slate-700"}`}>
-                    {exp.company}
-                  </span>
-                  <span className="text-sm text-slate-500">{exp.location}</span>
+                <div className="mt-0.5 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5">
+                  <span className={tpl.company}>{exp.company}</span>
+                  <span className={tpl.location}>{exp.location}</span>
                 </div>
-                <p className="text-sm text-slate-700 whitespace-pre-wrap">{exp.description}</p>
+                <p className={tpl.desc}>{exp.description}</p>
               </div>
             ))}
           </div>
         </section>
       )}
 
-      {/* Education */}
       {education.length > 0 && (
-        <section className="mb-6">
-          <h2 className={styles.sectionTitle}>
-            {templateId === "balanced" && <div className="w-2 h-6 bg-primary rounded-sm" />}
-            Education
-          </h2>
-          <div className="space-y-4">
+        <section className={tpl.section}>
+          <h2 className={tpl.sectionTitle}>Education</h2>
+          <div className={tpl.entrySpacing}>
             {education.map((edu) => (
-              <div key={edu.id} className={templateId === "minimal" ? "border-l-2 border-slate-200 pl-4 py-1" : ""}>
-                <div className="flex justify-between items-baseline mb-1">
-                  <h3 className="font-bold text-slate-800">{edu.degree}</h3>
-                  <span className={`text-sm font-medium ${templateId === "minimal" ? "text-slate-400" : "text-primary"}`}>
-                    {edu.startDate} - {edu.current ? "Present" : edu.endDate}
+              <div key={edu.id}>
+                <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                  <h3 className={tpl.itemTitle}>{edu.degree}</h3>
+                  <span className={tpl.dates}>
+                    {edu.startDate} – {edu.current ? "Present" : edu.endDate}
                   </span>
                 </div>
-                <div className="flex justify-between items-baseline">
-                  <span className={`text-sm font-semibold ${templateId === "executive" ? "text-slate-900" : "text-slate-700"}`}>
-                    {edu.school}
-                  </span>
-                  <span className="text-sm text-slate-500">{edu.location}</span>
+                <div className="mt-0.5 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5">
+                  <span className={tpl.company}>{edu.school}</span>
+                  <span className={tpl.location}>{edu.location}</span>
                 </div>
-                {edu.gpa && <p className="text-sm text-slate-600 mt-1">GPA: {edu.gpa}</p>}
+                {edu.gpa?.trim() && (
+                  <p className={cn(tpl.desc, "mt-1.5")}>GPA: {edu.gpa}</p>
+                )}
               </div>
             ))}
           </div>
         </section>
       )}
 
-      {/* Projects */}
+      {skills.length > 0 && (
+        <section className={tpl.section}>
+          <h2 className={tpl.sectionTitle}>Skills</h2>
+          <p className={tpl.skills}>
+            {skills.map((s) => s.name.trim()).filter(Boolean).join(", ")}
+          </p>
+        </section>
+      )}
+
       {projects.length > 0 && (
-        <section className="mb-6">
-          <h2 className={styles.sectionTitle}>
-            {templateId === "balanced" && <div className="w-2 h-6 bg-primary rounded-sm" />}
-            Projects
-          </h2>
-          <div className="space-y-4">
+        <section className={tpl.section}>
+          <h2 className={tpl.sectionTitle}>Projects</h2>
+          <div className={tpl.entrySpacing}>
             {projects.map((proj) => (
-              <div key={proj.id} className={templateId === "minimal" ? "border-l-2 border-slate-200 pl-4 py-1" : ""}>
-                <div className="flex justify-between items-baseline mb-1">
-                  <h3 className="font-bold text-slate-800">{proj.name}</h3>
-                  {proj.url && <span className="text-sm text-slate-500">{proj.url}</span>}
+              <div key={proj.id}>
+                <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                  <h3 className={tpl.itemTitle}>{proj.name}</h3>
+                  {proj.url?.trim() && (
+                    <span className={tpl.projectUrl}>{proj.url}</span>
+                  )}
                 </div>
-                <p className="text-sm text-slate-700 whitespace-pre-wrap">{proj.description}</p>
+                <p className={tpl.desc}>{proj.description}</p>
               </div>
             ))}
           </div>
         </section>
       )}
 
-      {/* Custom Sections */}
-      {customSections && customSections.length > 0 && customSections.map((section) => (
-        <section key={section.id} className="mb-6">
-          <h2 className={styles.sectionTitle}>
-            {templateId === "balanced" && <div className="w-2 h-6 bg-primary rounded-sm" />}
-            {section.title}
-          </h2>
-          <div className="space-y-3">
-            {section.items.map((item: any) => (
-              <div key={item.id} className={templateId === "minimal" ? "border-l-2 border-slate-200 pl-4 py-1" : ""}>
-                {(!item.type || item.type === "paragraph") && (
-                  <>
-                    <h3 className="font-bold text-slate-800">{item.name}</h3>
-                    {item.description && (
-                      <p className="text-sm text-slate-700 whitespace-pre-wrap">{item.description}</p>
-                    )}
-                  </>
-                )}
-                
-                {item.type === "bullets" && (
-                  <>
-                    <h3 className="font-bold text-slate-800 mb-1">{item.name}</h3>
-                    {item.description && (
-                      <ul className="list-disc list-inside text-sm text-slate-700 space-y-1">
-                        {item.description.split('\n').filter(Boolean).map((bullet: string, i: number) => (
-                          <li key={i} className="pl-1 leading-relaxed">
-                            <span className="-ml-1">{bullet.trim()}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </>
-                )}
+      {customSections &&
+        customSections.length > 0 &&
+        customSections.map((section) => (
+          <section key={section.id} className={tpl.section}>
+            <h2 className={tpl.sectionTitle}>{section.title}</h2>
+            <div className="space-y-3">
+              {section.items.map((item: any) => (
+                <div key={item.id}>
+                  {(!item.type || item.type === "paragraph") && (
+                    <>
+                      <h3 className={tpl.itemTitle}>{item.name}</h3>
+                      {item.description && (
+                        <p className={cn(tpl.desc, "mt-1 whitespace-pre-wrap")}>{item.description}</p>
+                      )}
+                    </>
+                  )}
 
-                {item.type === "progress" && (
-                  <div className="flex flex-col gap-1 w-full mt-1">
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="font-bold text-slate-800">{item.name}</span>
-                      <span className="text-slate-600 font-medium">{item.value || 0}%</span>
-                    </div>
-                    <div className="h-1.5 w-full max-w-sm bg-slate-200 rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-primary rounded-full" 
-                        style={{ width: `${item.value || 0}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </section>
-      ))}
+                  {item.type === "bullets" && (
+                    <>
+                      <h3 className={tpl.itemTitle}>{item.name}</h3>
+                      {item.description && (
+                        <ul
+                          className={cn(
+                            "mt-1 list-disc space-y-1 pl-5 text-[12px] leading-relaxed text-neutral-800",
+                            templateId === "compact" && "text-[11px]",
+                            templateId === "minimal" && "text-neutral-700"
+                          )}
+                        >
+                          {item.description
+                            .split("\n")
+                            .filter(Boolean)
+                            .map((bullet: string, i: number) => (
+                              <li key={i}>{bullet.trim()}</li>
+                            ))}
+                        </ul>
+                      )}
+                    </>
+                  )}
 
-      {/* Skills Output for other templates */}
-      {!isProfessional && renderSkills()}
+                  {item.type === "progress" && (
+                    <p className={cn(tpl.desc, "mt-0")}>
+                      <span className="font-semibold">{item.name}</span>
+                      {typeof item.value === "number" ? `: ${item.value}%` : ""}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+        ))}
 
-      {/* Suggested Page Breaks Overlay */}
       {showPageBreaks && (
-        <div className="absolute inset-0 pointer-events-none overflow-hidden h-full z-50 rounded-b-sm">
-           {[...Array(5)].map((_, i) => i > 0 && (
-               <div 
-                 key={i} 
-                 className="absolute w-[816px] border-t-[1.5px] border-dashed border-slate-300 left-0 flex justify-center opacity-80"
-                 style={{ top: `${i * 1056}px` }}
-               >
-                 <span className="bg-white text-slate-400 text-[10px] font-bold px-3 py-1 rounded-b shadow-sm uppercase tracking-widest border border-t-0 border-slate-200 pointer-events-auto">
-                   Suggested Page {i + 1}
-                 </span>
-               </div>
-           ))}
+        <div className="pointer-events-none absolute inset-0 z-50 h-full overflow-hidden rounded-b-sm">
+          {[...Array(5)].map(
+            (_, i) =>
+              i > 0 && (
+                <div
+                  key={i}
+                  className="absolute left-0 flex w-[816px] justify-center border-t-[1.5px] border-dashed border-neutral-300 opacity-80"
+                  style={{ top: `${i * 1056}px` }}
+                >
+                  <span className="pointer-events-auto rounded-b border border-t-0 border-neutral-200 bg-white px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-neutral-400 shadow-sm">
+                    Suggested Page {i + 1}
+                  </span>
+                </div>
+              )
+          )}
         </div>
       )}
     </div>
