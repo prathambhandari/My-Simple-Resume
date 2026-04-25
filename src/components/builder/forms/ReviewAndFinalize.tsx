@@ -12,7 +12,8 @@ import { RESUME_TEMPLATE_OPTIONS } from "@/lib/resumeTemplates";
 import { cn } from "@/lib/utils";
 
 export function ReviewAndFinalize() {
-  const { data, template, setTemplate, themeColor, prevStep } = useResumeStore();
+  const { data, template, setTemplate, themeColor, prevStep } =
+    useResumeStore();
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
@@ -20,14 +21,18 @@ export function ReviewAndFinalize() {
   }, []);
 
   const getPDFDocument = () => {
-    return <DynamicPDF data={data} templateId={template} themeColor={themeColor} />;
+    return (
+      <DynamicPDF data={data} templateId={template} themeColor={themeColor} />
+    );
   };
 
   return (
     <div className="w-full">
       <div className="mb-6">
         <span className="text-mono-label text-muted-foreground">Step 6</span>
-        <h2 className="font-heading mt-2 text-3xl font-medium tracking-[-0.06em] text-foreground">Choose resume design</h2>
+        <h2 className="font-heading mt-2 text-3xl font-medium tracking-[-0.06em] text-foreground">
+          Choose resume design
+        </h2>
       </div>
 
       <div className="mb-10 grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -38,7 +43,7 @@ export function ReviewAndFinalize() {
               "group cursor-pointer overflow-hidden rounded-xl border-2 bg-card transition-all",
               template === tpl.id
                 ? "border-[#0099ff] shadow-framer-float ring-2 ring-[rgba(0,153,255,0.25)]"
-                : "border-white/[0.08] hover:border-[#0099ff]/40 hover:shadow-framer-float"
+                : "border-white/[0.08] hover:border-[#0099ff]/40 hover:shadow-framer-float",
             )}
             onClick={() => setTemplate(tpl.id)}
           >
@@ -51,7 +56,9 @@ export function ReviewAndFinalize() {
             </div>
             <CardContent className="p-4">
               <div className="mb-1 flex items-center justify-between gap-2">
-                <h3 className="font-heading font-medium tracking-[-0.04em] text-foreground">{tpl.name}</h3>
+                <h3 className="font-heading font-medium tracking-[-0.04em] text-foreground">
+                  {tpl.name}
+                </h3>
                 {template === tpl.id && (
                   <div className="flex size-6 shrink-0 animate-in zoom-in duration-300 items-center justify-center border border-border bg-primary text-primary-foreground">
                     <Check className="h-3.5 w-3.5" strokeWidth={4} />

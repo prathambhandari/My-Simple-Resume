@@ -18,8 +18,7 @@ const TOTAL_FLOW_STEPS = 6;
 
 /** Override with `NEXT_PUBLIC_DONATE_URL` in `.env.local` for your tip/support page. */
 const DONATE_URL =
-  process.env.NEXT_PUBLIC_DONATE_URL ??
-  "https://razorpay.me/@prathambhandari";
+  process.env.NEXT_PUBLIC_DONATE_URL ?? "https://razorpay.me/@prathambhandari";
 
 export default function BuilderPage() {
   const currentStep = useResumeStore((state) => state.currentStep);
@@ -30,7 +29,7 @@ export default function BuilderPage() {
     if (
       typeof window !== "undefined" &&
       window.confirm(
-        "Clear all resume data and start over from step 1? This cannot be undone."
+        "Clear all resume data and start over from step 1? This cannot be undone.",
       )
     ) {
       resetStore();
@@ -66,7 +65,7 @@ export default function BuilderPage() {
 
   const flowProgressPercent = Math.min(
     100,
-    Math.max(0, (currentStep / TOTAL_FLOW_STEPS) * 100)
+    Math.max(0, (currentStep / TOTAL_FLOW_STEPS) * 100),
   );
 
   return (
@@ -92,7 +91,7 @@ export default function BuilderPage() {
               rel="noopener noreferrer"
               className={cn(
                 buttonVariants({ variant: "outline", size: "sm" }),
-                "text-[15px] tracking-[-0.02em]"
+                "text-[15px] tracking-[-0.02em]",
               )}
             >
               Donate
@@ -122,7 +121,9 @@ export default function BuilderPage() {
         <div
           className={cn(
             "mx-auto grid w-full max-w-[min(1320px,calc(100vw-2rem))] gap-x-10 gap-y-8 lg:items-start lg:justify-center",
-            currentStep === 6 ? "lg:grid-cols-2" : "lg:grid-cols-[440px_minmax(816px,1fr)]"
+            currentStep === 6
+              ? "lg:grid-cols-2"
+              : "lg:grid-cols-[440px_minmax(816px,1fr)]",
           )}
         >
           <div
@@ -130,7 +131,7 @@ export default function BuilderPage() {
               "custom-scrollbar min-w-0 self-start transition-all duration-300 lg:h-[calc(100vh-8rem)] lg:overflow-y-auto lg:pb-12",
               currentStep === 6
                 ? "w-full"
-                : "mx-auto w-full max-w-[440px] justify-self-start lg:mx-0 lg:w-full lg:max-w-none"
+                : "mx-auto w-full max-w-[440px] justify-self-start lg:mx-0 lg:w-full lg:max-w-none",
             )}
           >
             {renderFormStep()}
@@ -144,7 +145,12 @@ export default function BuilderPage() {
 
       {/* Floating View Preview Button for Mobile */}
       <div className="fixed bottom-6 right-6 z-40 lg:hidden">
-        <Button type="button" size="lg" onClick={() => setMobilePreviewOpen(true)} className="gap-2 shadow-none">
+        <Button
+          type="button"
+          size="lg"
+          onClick={() => setMobilePreviewOpen(true)}
+          className="gap-2 shadow-none"
+        >
           <Eye className="size-5" />
           <span>Preview</span>
         </Button>
@@ -155,7 +161,9 @@ export default function BuilderPage() {
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 px-3 pb-6 pt-24 backdrop-blur-md lg:hidden">
           <div className="flex h-full w-full flex-col overflow-hidden rounded-xl border border-white/[0.12] bg-card text-card-foreground shadow-framer-float animate-in slide-in-from-bottom-12 fade-in duration-300 ring-1 ring-[rgba(0,153,255,0.15)]">
             <div className="flex items-center justify-between border-b border-white/[0.08] p-4">
-              <h3 className="font-heading ml-2 text-lg font-medium tracking-[-0.04em]">Live Preview</h3>
+              <h3 className="font-heading ml-2 text-lg font-medium tracking-[-0.04em]">
+                Live Preview
+              </h3>
               <button
                 type="button"
                 onClick={() => setMobilePreviewOpen(false)}
@@ -168,10 +176,14 @@ export default function BuilderPage() {
               {/* Absolute dead centering guarantees perfect alignment regardless of scaling overflows */}
               <div className="absolute left-[50%] top-4 -translate-x-1/2 origin-top scale-[0.42] sm:scale-[0.5] md:scale-[0.6] transition-transform duration-300">
                 <div className="w-[816px] h-[1056px] shadow-2xl bg-white">
-                  <DynamicTemplate templateId={template} showPageBreaks={true} bareCanvas />
+                  <DynamicTemplate
+                    templateId={template}
+                    showPageBreaks={true}
+                    bareCanvas
+                  />
                 </div>
               </div>
-              
+
               {/* Dummy bounding blocks to preserve native scrolling bounds */}
               <div className="w-full h-[480px] sm:hidden" />
               <div className="hidden sm:block md:hidden w-full h-[560px]" />
@@ -180,7 +192,6 @@ export default function BuilderPage() {
           </div>
         </div>
       )}
-
     </div>
   );
 }

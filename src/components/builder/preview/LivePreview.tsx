@@ -15,7 +15,11 @@ export function LivePreview() {
         className="ring-framer shadow-framer-float shrink-0 overflow-hidden rounded-xl bg-white"
         style={{ width: PREVIEW_PAGE_W }}
       >
-        <DynamicTemplate templateId={template} showPageBreaks={true} bareCanvas />
+        <DynamicTemplate
+          templateId={template}
+          showPageBreaks={true}
+          bareCanvas
+        />
       </div>
     </div>
   );
