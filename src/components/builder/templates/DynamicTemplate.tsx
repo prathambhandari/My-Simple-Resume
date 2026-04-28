@@ -4,6 +4,7 @@ import { useResumeStore } from "@/store/useResumeStore";
 import type { TemplateType } from "@/types/resume";
 import { cn } from "@/lib/utils";
 import { formatMonYYYY } from "@/lib/dateFormat";
+import type { ResumeData } from "@/types/resume";
 
 type WebTpl = {
   pad: string;
@@ -146,14 +147,19 @@ export function DynamicTemplate({
   templateId,
   showPageBreaks = false,
   bareCanvas = false,
+  paginated = false,
+  data,
 }: {
   templateId: TemplateType;
   showPageBreaks?: boolean;
   bareCanvas?: boolean;
+  paginated?: boolean;
+  data?: ResumeData;
 }) {
   const tpl = WEB_BY_ID[templateId];
-  const { data } = useResumeStore();
-  const { personalInfo, summary, experience, education, skills, projects, customSections } = data;
+  const storeData = useResumeStore((s) => s.data);
+  const resolvedData = data ?? storeData;
+  const { personalInfo, summary, experience, education, skills, projects, customSections } = resolvedData;
 
   const derivedLinks = [
     ...(personalInfo.links ?? []),
@@ -193,25 +199,40 @@ export function DynamicTemplate({
         tpl.pad,
         tpl.root,
         bareCanvas
-          ? "w-[816px] shrink-0 border border-border bg-transparent shadow-none"
+          ? cn(
+              "w-[816px] shrink-0 shadow-none",
+              paginated
+                ? "border-0 bg-transparent"
+                : "border border-border bg-white",
+            )
           : "mx-auto w-full max-w-[816px] scale-[0.8] bg-white shadow-sm md:scale-100"
       )}
     >
-      <header className={tpl.header}>
-        <h1 className={tpl.name}>{personalInfo.fullName || "Your Name"}</h1>
+      <header className={tpl.header} data-resume-block>
+        <h1 className={cn(tpl.name, "wrap-break-word")}>
+          {personalInfo.fullName || "Your Name"}
+        </h1>
         {(personalInfo.jobTitle || "").trim().length > 0 && (
-          <p className={tpl.job}>{personalInfo.jobTitle}</p>
+          <p className={cn(tpl.job, "wrap-break-word")}>{personalInfo.jobTitle}</p>
         )}
-        {primaryContactLine && <p className={tpl.contact}>{primaryContactLine}</p>}
-        {linksLine && <p className={tpl.contact}>{linksLine}</p>}
+        {primaryContactLine && (
+          <p className={cn(tpl.contact, "wrap-break-word")}>{primaryContactLine}</p>
+        )}
+        {linksLine && <p className={cn(tpl.contact, "wrap-break-word")}>{linksLine}</p>}
       </header>
 
       {summary?.trim() && (
-        <section className={tpl.section}>
-          {data.summaryShowTitle ? (
+        <section className={tpl.section} data-resume-block>
+          {resolvedData.summaryShowTitle ? (
             <h2 className={tpl.sectionTitle}>Professional Summary</h2>
           ) : null}
-          <p className={cn(tpl.desc, data.summaryShowTitle ? "" : "mt-0", "whitespace-pre-wrap")}>
+          <p
+            className={cn(
+              tpl.desc,
+              resolvedData.summaryShowTitle ? "" : "mt-0",
+              "whitespace-pre-wrap wrap-break-word",
+            )}
+          >
             {summary}
           </p>
         </section>
@@ -219,22 +240,30 @@ export function DynamicTemplate({
 
       {experience.length > 0 && (
         <section className={tpl.section}>
-          <h2 className={tpl.sectionTitle}>Professional Experience</h2>
-          <div className={tpl.entrySpacing}>
+          <h2 className={tpl.sectionTitle} data-resume-section-title>
+            Professional Experience
+          </h2>
+          <div className={tpl.entrySpacing} data-resume-entries>
             {experience.map((exp) => (
-              <div key={exp.id}>
-                <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-                  <h3 className={tpl.itemTitle}>{exp.jobTitle}</h3>
-                  <span className={tpl.dates}>
+              <div key={exp.id} data-resume-block>
+                <div className="flex min-w-0 flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                  <h3 className={cn(tpl.itemTitle, "min-w-0 wrap-break-word")}>
+                    {exp.jobTitle}
+                  </h3>
+                  <span className={cn(tpl.dates, "wrap-break-word")}>
                     {formatMonYYYY(exp.startDate) || exp.startDate} –{" "}
                     {exp.current ? "Present" : formatMonYYYY(exp.endDate) || exp.endDate}
                   </span>
                 </div>
-                <div className="mt-0.5 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5">
-                  <span className={tpl.company}>{exp.company}</span>
-                  <span className={tpl.location}>{exp.location}</span>
+                <div className="mt-0.5 flex min-w-0 flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5">
+                  <span className={cn(tpl.company, "min-w-0 wrap-break-word")}>
+                    {exp.company}
+                  </span>
+                  <span className={cn(tpl.location, "wrap-break-word")}>
+                    {exp.location}
+                  </span>
                 </div>
-                <p className={tpl.desc}>{exp.description}</p>
+                <p className={cn(tpl.desc, "wrap-break-word")}>{exp.description}</p>
               </div>
             ))}
           </div>
@@ -243,23 +272,33 @@ export function DynamicTemplate({
 
       {education.length > 0 && (
         <section className={tpl.section}>
-          <h2 className={tpl.sectionTitle}>Education</h2>
-          <div className={tpl.entrySpacing}>
+          <h2 className={tpl.sectionTitle} data-resume-section-title>
+            Education
+          </h2>
+          <div className={tpl.entrySpacing} data-resume-entries>
             {education.map((edu) => (
-              <div key={edu.id}>
-                <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-                  <h3 className={tpl.itemTitle}>{edu.degree}</h3>
-                  <span className={tpl.dates}>
+              <div key={edu.id} data-resume-block>
+                <div className="flex min-w-0 flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                  <h3 className={cn(tpl.itemTitle, "min-w-0 wrap-break-word")}>
+                    {edu.degree}
+                  </h3>
+                  <span className={cn(tpl.dates, "wrap-break-word")}>
                     {formatMonYYYY(edu.startDate) || edu.startDate} –{" "}
                     {edu.current ? "Present" : formatMonYYYY(edu.endDate) || edu.endDate}
                   </span>
                 </div>
-                <div className="mt-0.5 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5">
-                  <span className={tpl.company}>{edu.school}</span>
-                  <span className={tpl.location}>{edu.location}</span>
+                <div className="mt-0.5 flex min-w-0 flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5">
+                  <span className={cn(tpl.company, "min-w-0 wrap-break-word")}>
+                    {edu.school}
+                  </span>
+                  <span className={cn(tpl.location, "wrap-break-word")}>
+                    {edu.location}
+                  </span>
                 </div>
                 {edu.gpa?.trim() && (
-                  <p className={cn(tpl.desc, "mt-1.5")}>GPA: {edu.gpa}</p>
+                  <p className={cn(tpl.desc, "mt-1.5 wrap-break-word")}>
+                    GPA: {edu.gpa}
+                  </p>
                 )}
               </div>
             ))}
@@ -268,9 +307,9 @@ export function DynamicTemplate({
       )}
 
       {skills.length > 0 && (
-        <section className={tpl.section}>
+        <section className={tpl.section} data-resume-block>
           <h2 className={tpl.sectionTitle}>Skills</h2>
-          <p className={tpl.skills}>
+          <p className={cn(tpl.skills, "wrap-break-word")}>
             {skills.map((s) => s.name.trim()).filter(Boolean).join(", ")}
           </p>
         </section>
@@ -278,17 +317,23 @@ export function DynamicTemplate({
 
       {projects.length > 0 && (
         <section className={tpl.section}>
-          <h2 className={tpl.sectionTitle}>Projects</h2>
-          <div className={tpl.entrySpacing}>
+          <h2 className={tpl.sectionTitle} data-resume-section-title>
+            Projects
+          </h2>
+          <div className={tpl.entrySpacing} data-resume-entries>
             {projects.map((proj) => (
-              <div key={proj.id}>
-                <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-                  <h3 className={tpl.itemTitle}>{proj.name}</h3>
+              <div key={proj.id} data-resume-block>
+                <div className="flex min-w-0 flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                  <h3 className={cn(tpl.itemTitle, "min-w-0 wrap-break-word")}>
+                    {proj.name}
+                  </h3>
                   {proj.url?.trim() && (
-                    <span className={tpl.projectUrl}>{proj.url}</span>
+                    <span className={cn(tpl.projectUrl, "wrap-break-word")}>
+                      {proj.url}
+                    </span>
                   )}
                 </div>
-                <p className={tpl.desc}>{proj.description}</p>
+                <p className={cn(tpl.desc, "wrap-break-word")}>{proj.description}</p>
               </div>
             ))}
           </div>
@@ -299,22 +344,35 @@ export function DynamicTemplate({
         customSections.length > 0 &&
         customSections.map((section) => (
           <section key={section.id} className={tpl.section}>
-            <h2 className={tpl.sectionTitle}>{section.title}</h2>
-            <div className="space-y-3">
+            <h2 className={tpl.sectionTitle} data-resume-section-title>
+              {section.title}
+            </h2>
+            <div className="space-y-3" data-resume-entries>
               {section.items.map((item: any) => (
-                <div key={item.id}>
+                <div key={item.id} data-resume-block>
                   {(!item.type || item.type === "paragraph") && (
                     <>
-                      <h3 className={tpl.itemTitle}>{item.name}</h3>
+                      <h3 className={cn(tpl.itemTitle, "wrap-break-word")}>
+                        {item.name}
+                      </h3>
                       {item.description && (
-                        <p className={cn(tpl.desc, "mt-1 whitespace-pre-wrap")}>{item.description}</p>
+                        <p
+                          className={cn(
+                            tpl.desc,
+                            "mt-1 whitespace-pre-wrap wrap-break-word",
+                          )}
+                        >
+                          {item.description}
+                        </p>
                       )}
                     </>
                   )}
 
                   {item.type === "bullets" && (
                     <>
-                      <h3 className={tpl.itemTitle}>{item.name}</h3>
+                      <h3 className={cn(tpl.itemTitle, "wrap-break-word")}>
+                        {item.name}
+                      </h3>
                       {item.description && (
                         <ul
                           className={cn(
@@ -327,7 +385,9 @@ export function DynamicTemplate({
                             .split("\n")
                             .filter(Boolean)
                             .map((bullet: string, i: number) => (
-                              <li key={i}>{bullet.trim()}</li>
+                              <li key={i} className="wrap-break-word">
+                                {bullet.trim()}
+                              </li>
                             ))}
                         </ul>
                       )}
@@ -335,7 +395,7 @@ export function DynamicTemplate({
                   )}
 
                   {item.type === "progress" && (
-                    <p className={cn(tpl.desc, "mt-0")}>
+                    <p className={cn(tpl.desc, "mt-0 wrap-break-word")}>
                       <span className="font-semibold">{item.name}</span>
                       {typeof item.value === "number" ? `: ${item.value}%` : ""}
                     </p>

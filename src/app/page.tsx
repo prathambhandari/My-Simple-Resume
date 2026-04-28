@@ -11,7 +11,7 @@ import { LivePreview } from "@/components/builder/preview/LivePreview";
 import { useEffect, useState } from "react";
 import { Eye, X, LayoutGrid } from "lucide-react";
 import Link from "next/link";
-import { DynamicTemplate } from "@/components/builder/templates/DynamicTemplate";
+import { PaginatedTemplate } from "@/components/builder/templates/PaginatedTemplate";
 import { cn } from "@/lib/utils";
 import { Button, buttonVariants } from "@/components/ui/button";
 
@@ -169,17 +169,9 @@ export default function BuilderPage() {
               </button>
             </div>
             <div className="custom-scrollbar relative flex-1 overflow-y-auto overflow-x-hidden bg-black p-4">
-              <div className="mx-auto aspect-square w-full max-w-[560px] overflow-hidden rounded-xl bg-transparent shadow-2xl">
-                <div className="flex h-full w-full items-start justify-center">
-                  <div className="origin-top scale-[0.68] transition-transform duration-300">
-                    <div className="w-[816px] h-[1056px] bg-white">
-                      <DynamicTemplate
-                        templateId={template}
-                        showPageBreaks={true}
-                        bareCanvas
-                      />
-                    </div>
-                  </div>
+              <div className="flex w-full items-start justify-center">
+                <div className="origin-top scale-[0.68] transition-transform duration-300">
+                  <PaginatedTemplate templateId={template} />
                 </div>
               </div>
             </div>
