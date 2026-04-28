@@ -3,13 +3,11 @@
 import { useState, useEffect } from "react";
 import { useResumeStore } from "@/store/useResumeStore";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Download, Check } from "lucide-react";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import { DynamicPDF } from "../pdf/DynamicPDF";
 import { DynamicTemplate } from "../templates/DynamicTemplate";
 import { RESUME_TEMPLATE_OPTIONS } from "@/lib/resumeTemplates";
-import { cn } from "@/lib/utils";
 
 export function ReviewAndFinalize() {
   const { data, template, setTemplate, themeColor, prevStep } =
@@ -35,41 +33,36 @@ export function ReviewAndFinalize() {
         </h2>
       </div>
 
-      <div className="mb-10 grid grid-cols-1 gap-6 md:grid-cols-2">
+      <div className="mb-10 grid grid-cols-2 gap-6">
         {RESUME_TEMPLATE_OPTIONS.map((tpl) => (
-          <Card
+          <button
+            type="button"
             key={tpl.id}
-            className={cn(
-              "group cursor-pointer overflow-hidden rounded-xl border-2 bg-card transition-all",
-              template === tpl.id
-                ? "border-[#0099ff] shadow-framer-float ring-2 ring-[rgba(0,153,255,0.25)]"
-                : "border-white/[0.08] hover:border-[#0099ff]/40 hover:shadow-framer-float",
-            )}
+            className="group relative w-full cursor-pointer overflow-hidden rounded-md bg-transparent p-0 text-left transition-all"
             onClick={() => setTemplate(tpl.id)}
+            aria-label={`Select ${tpl.name} template`}
           >
-            <div className="relative flex h-40 items-start justify-center overflow-hidden bg-muted p-0 pt-4 pointer-events-none select-none after:absolute after:inset-0 after:bg-linear-to-b after:from-transparent after:via-transparent after:to-muted">
-              <div className="transition-transform duration-300 group-hover:scale-[1.02]">
-                <div className="origin-top scale-[0.18] w-[816px] drop-shadow-md">
-                  <DynamicTemplate templateId={tpl.id} />
+            <div
+              className="relative aspect-816/1056 w-full overflow-hidden rounded-md bg-white"
+              style={{ containerType: "inline-size" }}
+            >
+              <div
+                className="absolute left-0 top-0 origin-top-left transition-transform duration-300"
+                style={{
+                  width: "816px",
+                  height: "1056px",
+                  transform: "scale(calc(100cqi / 816px))",
+                }}
+              >
+                <DynamicTemplate templateId={tpl.id} />
+              </div>
+              {template === tpl.id && (
+                <div className="absolute right-3 top-3 flex size-7 items-center justify-center rounded-full bg-framer-blue text-white shadow-md">
+                  <Check className="h-4 w-4" strokeWidth={3} />
                 </div>
-              </div>
+              )}
             </div>
-            <CardContent className="p-4">
-              <div className="mb-1 flex items-center justify-between gap-2">
-                <h3 className="font-heading font-medium tracking-[-0.04em] text-foreground">
-                  {tpl.name}
-                </h3>
-                {template === tpl.id && (
-                  <div className="flex size-6 shrink-0 animate-in zoom-in duration-300 items-center justify-center border border-border bg-primary text-primary-foreground">
-                    <Check className="h-3.5 w-3.5" strokeWidth={4} />
-                  </div>
-                )}
-              </div>
-              <p className="text-xs font-[330] leading-snug tracking-[-0.05px] text-muted-foreground">
-                {tpl.description}
-              </p>
-            </CardContent>
-          </Card>
+          </button>
         ))}
       </div>
 

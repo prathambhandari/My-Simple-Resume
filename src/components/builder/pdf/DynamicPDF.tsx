@@ -1,5 +1,6 @@
-import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
+import { Document, Page, Text, View, StyleSheet, Link } from "@react-pdf/renderer";
 import { ResumeData, TemplateType } from "@/types/resume";
+import { formatMonYYYY } from "@/lib/dateFormat";
 
 /** PDF variants: single-column, LETTER, Helvetica/Times—aligned with preview templates. */
 export function DynamicPDF({
@@ -17,15 +18,65 @@ export function DynamicPDF({
 
   const styles = buildPdfStyles(templateId, accent);
 
-  const contactParts = [
+  const derivedLinks = [
+    ...(personalInfo.links ?? []),
+    personalInfo.website?.trim()
+      ? { id: "website", title: "Website", url: personalInfo.website.trim() }
+      : null,
+    personalInfo.linkedin?.trim()
+      ? { id: "linkedin", title: "LinkedIn", url: personalInfo.linkedin.trim() }
+      : null,
+    personalInfo.github?.trim()
+      ? { id: "github", title: "GitHub", url: personalInfo.github.trim() }
+      : null,
+  ].filter(Boolean) as Array<{ id: string; title: string; url: string }>;
+
+  const linkDisplay = personalInfo.linkDisplay ?? "both";
+  const renderedLinkText = (l: { title: string; url: string }) => {
+    if (linkDisplay === "title") return l.title;
+    if (linkDisplay === "url") return l.url;
+    return `${l.title}: ${l.url}`;
+  };
+
+  const contactTextParts = [
+    personalInfo.dateOfBirth?.trim() ? `DOB: ${personalInfo.dateOfBirth}` : "",
     personalInfo.email,
     personalInfo.phone,
     personalInfo.location,
-    personalInfo.website,
-    personalInfo.linkedin,
-    personalInfo.github,
-  ].filter(Boolean);
-  const contactStr = contactParts.join(" · ");
+  ].filter(Boolean) as string[];
+
+  const contactInline =
+    contactTextParts.length > 0 || derivedLinks.length > 0 ? (
+      <View>
+        {contactTextParts.length > 0 && (
+          <Text
+            style={[
+              styles.contact,
+              templateId === "minimal" ? { textAlign: "center" as const } : {},
+            ]}
+          >
+            {contactTextParts.join(" · ")}
+          </Text>
+        )}
+        {derivedLinks.length > 0 && (
+          <Text
+            style={[
+              styles.contact,
+              templateId === "minimal" ? { textAlign: "center" as const } : {},
+            ]}
+          >
+            {derivedLinks.map((l, idx) => (
+              <Text key={l.id}>
+                {idx === 0 ? "" : " · "}
+                <Link src={l.url} style={{ textDecoration: "underline" }}>
+                  {renderedLinkText(l)}
+                </Link>
+              </Text>
+            ))}
+          </Text>
+        )}
+      </View>
+    ) : null;
 
   const skillsStr = skills.map((s) => s.name.trim()).filter(Boolean).join(", ");
 
@@ -34,7 +85,7 @@ export function DynamicPDF({
       <View style={styles.headerBand}>
         <Text style={styles.name}>{personalInfo.fullName || "Your Name"}</Text>
         {!!personalInfo.jobTitle?.trim() && <Text style={styles.jobTitle}>{personalInfo.jobTitle}</Text>}
-        {contactStr.length > 0 && <Text style={styles.contact}>{contactStr}</Text>}
+        {contactInline}
       </View>
     ) : (
       <View style={styles.headerRule}>
@@ -46,11 +97,7 @@ export function DynamicPDF({
             {personalInfo.jobTitle}
           </Text>
         )}
-        {contactStr.length > 0 && (
-          <Text style={[styles.contact, templateId === "minimal" ? { textAlign: "center" as const } : {}]}>
-            {contactStr}
-          </Text>
-        )}
+        {contactInline}
       </View>
     );
 
@@ -61,7 +108,9 @@ export function DynamicPDF({
 
         {summary?.trim() && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Professional Summary</Text>
+            {data.summaryShowTitle ? (
+              <Text style={styles.sectionTitle}>Professional Summary</Text>
+            ) : null}
             <Text style={styles.body}>{summary}</Text>
           </View>
         )}
@@ -74,7 +123,10 @@ export function DynamicPDF({
                 <View style={styles.rowTitle}>
                   <Text style={styles.itemMain}>{exp.jobTitle}</Text>
                   <Text style={styles.itemDates}>
-                    {exp.startDate} – {exp.current ? "Present" : exp.endDate}
+                    {formatMonYYYY(exp.startDate) || exp.startDate} –{" "}
+                    {exp.current
+                      ? "Present"
+                      : formatMonYYYY(exp.endDate) || exp.endDate}
                   </Text>
                 </View>
                 <View style={styles.rowSub}>
@@ -95,7 +147,10 @@ export function DynamicPDF({
                 <View style={styles.rowTitle}>
                   <Text style={styles.itemMain}>{edu.degree}</Text>
                   <Text style={styles.itemDates}>
-                    {edu.startDate} – {edu.current ? "Present" : edu.endDate}
+                    {formatMonYYYY(edu.startDate) || edu.startDate} –{" "}
+                    {edu.current
+                      ? "Present"
+                      : formatMonYYYY(edu.endDate) || edu.endDate}
                   </Text>
                 </View>
                 <View style={styles.rowSub}>

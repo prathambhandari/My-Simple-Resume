@@ -1,7 +1,7 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-import { ResumeData, defaultResumeData, TemplateType } from '@/types/resume';
-import { isValidTemplateId } from '@/lib/resumeTemplates';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import { ResumeData, defaultResumeData, TemplateType } from "@/types/resume";
+import { isValidTemplateId } from "@/lib/resumeTemplates";
 
 interface ResumeState {
   data: ResumeData;
@@ -22,37 +22,45 @@ export const useResumeStore = create<ResumeState>()(
     (set) => ({
       data: defaultResumeData,
       currentStep: 1,
-      template: 'standard',
-      themeColor: '#0099ff',
-      
-      updateData: (partialData) => 
-        set((state) => ({ 
-          data: { ...state.data, ...partialData } 
+      template: "standard",
+      themeColor: "#0099ff",
+
+      updateData: (partialData) =>
+        set((state) => ({
+          data: { ...state.data, ...partialData },
         })),
-        
+
       setStep: (step) => set({ currentStep: step }),
-      
-      nextStep: () => set((state) => ({ 
-        currentStep: Math.min(state.currentStep + 1, 6) 
-      })),
-      
-      prevStep: () => set((state) => ({ 
-        currentStep: Math.max(state.currentStep - 1, 1) 
-      })),
-      
+
+      nextStep: () =>
+        set((state) => ({
+          currentStep: Math.min(state.currentStep + 1, 6),
+        })),
+
+      prevStep: () =>
+        set((state) => ({
+          currentStep: Math.max(state.currentStep - 1, 1),
+        })),
+
       setTemplate: (template) => set({ template }),
-      
+
       setThemeColor: (color) => set({ themeColor: color }),
-      
-      resetStore: () => set({ data: defaultResumeData, currentStep: 1, template: 'standard', themeColor: '#0099ff' }),
+
+      resetStore: () =>
+        set({
+          data: defaultResumeData,
+          currentStep: 1,
+          template: "standard",
+          themeColor: "#0099ff",
+        }),
     }),
     {
-      name: 'glassforge-resume-storage', // key in local storage
+      name: "glassforge-resume-storage", // key in local storage
       onRehydrateStorage: () => (state) => {
         if (state && !isValidTemplateId(state.template)) {
-          state.template = 'standard';
+          state.template = "standard";
         }
       },
-    }
-  )
+    },
+  ),
 );

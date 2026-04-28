@@ -3,6 +3,7 @@
 import { useResumeStore } from "@/store/useResumeStore";
 import type { TemplateType } from "@/types/resume";
 import { cn } from "@/lib/utils";
+import { formatMonYYYY } from "@/lib/dateFormat";
 
 type WebTpl = {
   pad: string;
@@ -154,16 +155,36 @@ export function DynamicTemplate({
   const { data } = useResumeStore();
   const { personalInfo, summary, experience, education, skills, projects, customSections } = data;
 
-  const contactLine = [
+  const derivedLinks = [
+    ...(personalInfo.links ?? []),
+    personalInfo.website?.trim()
+      ? { id: "website", title: "Website", url: personalInfo.website.trim() }
+      : null,
+    personalInfo.linkedin?.trim()
+      ? { id: "linkedin", title: "LinkedIn", url: personalInfo.linkedin.trim() }
+      : null,
+    personalInfo.github?.trim()
+      ? { id: "github", title: "GitHub", url: personalInfo.github.trim() }
+      : null,
+  ].filter(Boolean) as Array<{ id: string; title: string; url: string }>;
+
+  const linkDisplay = personalInfo.linkDisplay ?? "both";
+  const renderedLinks = derivedLinks.map((l) => {
+    if (linkDisplay === "title") return l.title;
+    if (linkDisplay === "url") return l.url;
+    return `${l.title}: ${l.url}`;
+  });
+
+  const primaryContactLine = [
+    (personalInfo.dateOfBirth || "").trim() ? `DOB: ${personalInfo.dateOfBirth}` : "",
     personalInfo.email,
     personalInfo.phone,
     personalInfo.location,
-    personalInfo.website,
-    personalInfo.linkedin,
-    personalInfo.github,
   ]
     .filter(Boolean)
     .join(" · ");
+
+  const linksLine = renderedLinks.filter(Boolean).join(" · ");
 
   return (
     <div
@@ -181,13 +202,18 @@ export function DynamicTemplate({
         {(personalInfo.jobTitle || "").trim().length > 0 && (
           <p className={tpl.job}>{personalInfo.jobTitle}</p>
         )}
-        {contactLine && <p className={tpl.contact}>{contactLine}</p>}
+        {primaryContactLine && <p className={tpl.contact}>{primaryContactLine}</p>}
+        {linksLine && <p className={tpl.contact}>{linksLine}</p>}
       </header>
 
       {summary?.trim() && (
         <section className={tpl.section}>
-          <h2 className={tpl.sectionTitle}>Professional Summary</h2>
-          <p className={cn(tpl.desc, "mt-0 whitespace-pre-wrap")}>{summary}</p>
+          {data.summaryShowTitle ? (
+            <h2 className={tpl.sectionTitle}>Professional Summary</h2>
+          ) : null}
+          <p className={cn(tpl.desc, data.summaryShowTitle ? "" : "mt-0", "whitespace-pre-wrap")}>
+            {summary}
+          </p>
         </section>
       )}
 
@@ -200,7 +226,8 @@ export function DynamicTemplate({
                 <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
                   <h3 className={tpl.itemTitle}>{exp.jobTitle}</h3>
                   <span className={tpl.dates}>
-                    {exp.startDate} – {exp.current ? "Present" : exp.endDate}
+                    {formatMonYYYY(exp.startDate) || exp.startDate} –{" "}
+                    {exp.current ? "Present" : formatMonYYYY(exp.endDate) || exp.endDate}
                   </span>
                 </div>
                 <div className="mt-0.5 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5">
@@ -223,7 +250,8 @@ export function DynamicTemplate({
                 <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
                   <h3 className={tpl.itemTitle}>{edu.degree}</h3>
                   <span className={tpl.dates}>
-                    {edu.startDate} – {edu.current ? "Present" : edu.endDate}
+                    {formatMonYYYY(edu.startDate) || edu.startDate} –{" "}
+                    {edu.current ? "Present" : formatMonYYYY(edu.endDate) || edu.endDate}
                   </span>
                 </div>
                 <div className="mt-0.5 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5">

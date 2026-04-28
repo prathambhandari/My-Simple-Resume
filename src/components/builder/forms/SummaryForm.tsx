@@ -9,10 +9,11 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 
 export function ProfessionalSummaryForm() {
   const { data, updateData, nextStep, prevStep } = useResumeStore();
-  
+
   const form = useForm<ProfessionalSummary>({
     resolver: zodResolver(professionalSummarySchema),
     defaultValues: { summary: data.summary },
@@ -30,7 +31,7 @@ export function ProfessionalSummaryForm() {
     });
     return () => subscription.unsubscribe();
   }, [form.watch, updateData]);
-  
+
   return (
     <Card className="overflow-visible rounded-none border-none bg-transparent shadow-none ring-0">
       <CardContent className="p-5 md:p-6">
@@ -42,15 +43,37 @@ export function ProfessionalSummaryForm() {
         </div>
 
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="summary">Summary <span className="text-destructive font-[540]">*</span></Label>
-            <Textarea 
-              id="summary" 
-              placeholder="A highly motivated software engineer with 5+ years of experience in..." 
-              className="min-h-[200px] resize-none"
-              {...form.register("summary")} 
+          <div className="flex items-center justify-between rounded-lg border border-white/8 bg-white/3 px-3 py-3">
+            <div>
+              <p className="text-sm font-[540] tracking-[-0.02em] text-foreground">
+                Show summary title
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Adds a “Professional Summary” heading in the resume.
+              </p>
+            </div>
+            <Switch
+              checked={!!data.summaryShowTitle}
+              onCheckedChange={(val) =>
+                updateData({ summaryShowTitle: val })
+              }
             />
-            {form.formState.errors.summary && <p className="text-sm text-destructive">{form.formState.errors.summary.message}</p>}
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="summary">
+              Summary <span className="text-destructive font-[540]">*</span>
+            </Label>
+            <Textarea
+              id="summary"
+              placeholder="A highly motivated software engineer with 5+ years of experience in..."
+              className="min-h-[200px] resize-none"
+              {...form.register("summary")}
+            />
+            {form.formState.errors.summary && (
+              <p className="text-sm text-destructive">
+                {form.formState.errors.summary.message}
+              </p>
+            )}
           </div>
 
           <div className="form-action-bleed pt-4">

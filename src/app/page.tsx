@@ -9,16 +9,13 @@ import { SkillsAndExtrasForm } from "@/components/builder/forms/SkillsAndExtrasF
 import { ReviewAndFinalize } from "@/components/builder/forms/ReviewAndFinalize";
 import { LivePreview } from "@/components/builder/preview/LivePreview";
 import { useEffect, useState } from "react";
-import { Eye, X } from "lucide-react";
+import { Eye, X, LayoutGrid } from "lucide-react";
+import Link from "next/link";
 import { DynamicTemplate } from "@/components/builder/templates/DynamicTemplate";
 import { cn } from "@/lib/utils";
 import { Button, buttonVariants } from "@/components/ui/button";
 
 const TOTAL_FLOW_STEPS = 6;
-
-/** Override with `NEXT_PUBLIC_DONATE_URL` in `.env.local` for your tip/support page. */
-const DONATE_URL =
-  process.env.NEXT_PUBLIC_DONATE_URL ?? "https://razorpay.me/@prathambhandari";
 
 export default function BuilderPage() {
   const currentStep = useResumeStore((state) => state.currentStep);
@@ -75,7 +72,17 @@ export default function BuilderPage() {
           <span className="font-heading min-w-0 flex-1 truncate text-xl font-medium tracking-[-0.06em] text-white sm:text-2xl">
             My Simple Resume
           </span>
-          <div className="flex shrink-0 items-center gap-2">
+          <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+            <Link
+              href="/templates"
+              className={cn(
+                buttonVariants({ variant: "ghost", size: "sm" }),
+                "text-[15px] tracking-[-0.02em] text-white",
+              )}
+            >
+              <LayoutGrid className="size-4 sm:mr-1" aria-hidden />
+              <span className="hidden sm:inline">Templates</span>
+            </Link>
             <Button
               type="button"
               variant="ghost"
@@ -85,17 +92,6 @@ export default function BuilderPage() {
             >
               Reset
             </Button>
-            <a
-              href={DONATE_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={cn(
-                buttonVariants({ variant: "outline", size: "sm" }),
-                "text-[15px] tracking-[-0.02em]",
-              )}
-            >
-              Donate
-            </a>
           </div>
         </div>
       </header>
@@ -122,7 +118,7 @@ export default function BuilderPage() {
           className={cn(
             "mx-auto grid w-full max-w-[min(1320px,calc(100vw-2rem))] gap-x-10 gap-y-8 lg:items-start lg:justify-center",
             currentStep === 6
-              ? "lg:grid-cols-2"
+              ? "lg:grid-cols-[minmax(0,0.4fr)_minmax(0,0.6fr)]"
               : "lg:grid-cols-[440px_minmax(816px,1fr)]",
           )}
         >
@@ -172,22 +168,20 @@ export default function BuilderPage() {
                 <X className="size-5" />
               </button>
             </div>
-            <div className="custom-scrollbar relative flex-1 overflow-y-auto overflow-x-hidden bg-black">
-              {/* Absolute dead centering guarantees perfect alignment regardless of scaling overflows */}
-              <div className="absolute left-[50%] top-4 -translate-x-1/2 origin-top scale-[0.42] sm:scale-[0.5] md:scale-[0.6] transition-transform duration-300">
-                <div className="w-[816px] h-[1056px] shadow-2xl bg-white">
-                  <DynamicTemplate
-                    templateId={template}
-                    showPageBreaks={true}
-                    bareCanvas
-                  />
+            <div className="custom-scrollbar relative flex-1 overflow-y-auto overflow-x-hidden bg-black p-4">
+              <div className="mx-auto aspect-square w-full max-w-[560px] overflow-hidden rounded-xl bg-transparent shadow-2xl">
+                <div className="flex h-full w-full items-start justify-center">
+                  <div className="origin-top scale-[0.68] transition-transform duration-300">
+                    <div className="w-[816px] h-[1056px] bg-white">
+                      <DynamicTemplate
+                        templateId={template}
+                        showPageBreaks={true}
+                        bareCanvas
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
-
-              {/* Dummy bounding blocks to preserve native scrolling bounds */}
-              <div className="w-full h-[480px] sm:hidden" />
-              <div className="hidden sm:block md:hidden w-full h-[560px]" />
-              <div className="hidden md:block w-full h-[680px]" />
             </div>
           </div>
         </div>

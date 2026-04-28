@@ -3,12 +3,38 @@ import { z } from "zod";
 export const personalInfoSchema = z.object({
   fullName: z.string().min(2, "Full name must be at least 2 characters"),
   jobTitle: z.string().optional().or(z.literal("")),
-  email: z.string().email("Invalid email address").optional().or(z.literal("")),
-  phone: z.string().optional().or(z.literal("")),
+  email: z
+    .string()
+    .min(1, "Email is required")
+    .email("Enter a valid email address (e.g. you@example.com)"),
+  phone: z
+    .string()
+    .regex(
+      /^\+\d{1,4}\s\d{6,15}$/,
+      "Enter a valid phone number (6-15 digits)",
+    )
+    .optional()
+    .or(z.literal("")),
+  dateOfBirth: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Enter a valid date")
+    .optional()
+    .or(z.literal("")),
   location: z.string().optional().or(z.literal("")),
   website: z.string().url().optional().or(z.literal("")),
   linkedin: z.string().url().optional().or(z.literal("")),
   github: z.string().url().optional().or(z.literal("")),
+  linkDisplay: z.enum(["title", "url", "both"]).optional().default("both"),
+  links: z
+    .array(
+      z.object({
+        id: z.string(),
+        title: z.string().min(1, "Link title is required").max(40),
+        url: z.string().url("Enter a valid URL (https://...)").max(300),
+      }),
+    )
+    .optional()
+    .default([]),
   photoUrl: z.string().optional(),
 });
 
@@ -67,6 +93,7 @@ export const customSectionSchema = z.object({
 export const resumeDataSchema = z.object({
   personalInfo: personalInfoSchema,
   summary: professionalSummarySchema.shape.summary,
+  summaryShowTitle: z.boolean().optional().default(false),
   experience: z.array(workExperienceSchema),
   education: z.array(educationSchema),
   skills: z.array(skillSchema),
@@ -99,13 +126,17 @@ export const defaultResumeData: ResumeData = {
     jobTitle: "",
     email: "",
     phone: "",
+    dateOfBirth: "",
     location: "",
     website: "",
     linkedin: "",
     github: "",
+    linkDisplay: "both",
+    links: [],
     photoUrl: "",
   },
   summary: "",
+  summaryShowTitle: false,
   experience: [],
   education: [],
   skills: [],
