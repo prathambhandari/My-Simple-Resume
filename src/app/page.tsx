@@ -113,7 +113,7 @@ export default function BuilderPage() {
         />
       </div>
 
-      <main className="scrollbar-none flex min-h-0 flex-1 overflow-x-clip border-b border-black px-4 pt-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:px-6 sm:pb-6 lg:overflow-x-auto lg:pb-6">
+      <main className="scrollbar-none flex min-h-0 flex-1 overflow-x-clip border-b border-black px-4 pt-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:px-6 sm:pb-6 lg:overflow-x-auto lg:overflow-y-hidden lg:pb-6">
         <div
           className={cn(
             "mx-auto grid w-full max-w-[min(1320px,calc(100vw-2rem))] gap-x-10 gap-y-8 lg:items-start lg:justify-center",
@@ -124,7 +124,7 @@ export default function BuilderPage() {
         >
           <div
             className={cn(
-              "custom-scrollbar min-w-0 self-start transition-all duration-300 lg:h-[calc(100vh-8rem)] lg:overflow-y-auto lg:pb-12",
+              "custom-scrollbar min-w-0 self-start transition-all duration-300 lg:h-[calc(100dvh-6.5rem)] lg:overflow-y-auto lg:pb-12",
               currentStep === 6
                 ? "w-full"
                 : "mx-auto w-full max-w-[440px] justify-self-start lg:mx-0 lg:w-full lg:max-w-none",
