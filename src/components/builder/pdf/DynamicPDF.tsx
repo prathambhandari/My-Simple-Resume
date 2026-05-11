@@ -192,7 +192,7 @@ export function DynamicPDF({
           customSections.map((section) => (
             <View key={section.id} style={styles.section}>
               <Text style={styles.sectionTitle}>{section.title}</Text>
-              {section.items.map((item: any) => (
+              {section.items.map((item) => (
                 <View key={item.id}>
                   {(!item.type || item.type === "paragraph") && (
                     <>
@@ -521,6 +521,170 @@ function buildPdfStyles(templateId: TemplateType, accent: string): PdfStyle {
       itemCo: { fontSize: 9, fontFamily: "Helvetica-Bold", color: "#404040", flex: 1, paddingRight: 8 },
       itemLoc: { fontSize: 9, color: "#737373", width: 140, textAlign: "right" },
       desc: { fontSize: 10, color: "#404040", marginTop: 4, marginBottom: 4, lineHeight: 1.65 },
+      skillsLine: { fontSize: 10, color: "#404040", lineHeight: 1.55 },
+      ...base,
+      bullet: { ...base.bullet, color: "#404040" },
+      bulletText: { ...base.bulletText, color: "#404040" },
+    });
+  }
+
+  if (templateId === "sidebar") {
+    return StyleSheet.create({
+      page: {
+        padding: 34,
+        paddingBottom: 44,
+        fontFamily: "Helvetica",
+        fontSize: 9.5,
+        lineHeight: 1.5,
+        color: "#171717",
+      },
+      headerRule: {
+        borderBottomWidth: 1,
+        borderBottomColor: "#0a0a0a",
+        paddingBottom: 10,
+      },
+      headerBand: {},
+      name: {
+        fontSize: 21,
+        fontFamily: "Helvetica-Bold",
+        color: "#0a0a0a",
+        marginBottom: 4,
+      },
+      jobTitle: { fontSize: 10, color: "#404040", marginBottom: 0 },
+      contact: { marginTop: 8, fontSize: 9, color: "#525252", lineHeight: 1.4 },
+      section: { marginTop: 14 },
+      sectionTitle: {
+        fontSize: 8,
+        fontFamily: "Helvetica-Bold",
+        textTransform: "uppercase",
+        letterSpacing: 1.1,
+        color: "#0a0a0a",
+        borderBottomWidth: 1,
+        borderBottomColor: "#d4d4d4",
+        paddingBottom: 3,
+        marginBottom: 6,
+      },
+      body: { fontSize: 9.5, color: "#262626", lineHeight: 1.55 },
+      itemMain: {
+        fontSize: 9.5,
+        fontFamily: "Helvetica-Bold",
+        color: "#0a0a0a",
+        flex: 1,
+        paddingRight: 8,
+      },
+      itemDates: { fontSize: 8.5, color: "#525252", width: 110, textAlign: "right" },
+      itemCo: { fontSize: 8.5, fontFamily: "Helvetica-Bold", color: "#262626", flex: 1, paddingRight: 8 },
+      itemLoc: { fontSize: 8.5, color: "#525252", width: 130, textAlign: "right" },
+      desc: { fontSize: 9.5, color: "#262626", marginTop: 3, marginBottom: 4, lineHeight: 1.55 },
+      skillsLine: { fontSize: 9.5, color: "#262626", lineHeight: 1.5 },
+      ...base,
+      bullet: { ...base.bullet, color: "#262626" },
+    });
+  }
+
+  if (templateId === "timeline") {
+    return StyleSheet.create({
+      page: {
+        padding: 40,
+        paddingBottom: 48,
+        fontFamily: "Helvetica",
+        fontSize: 10,
+        lineHeight: 1.55,
+        color: "#171717",
+      },
+      headerRule: {
+        borderBottomWidth: 2,
+        borderBottomColor: "#0a0a0a",
+        paddingBottom: 12,
+      },
+      headerBand: {},
+      name: {
+        fontSize: 24,
+        fontFamily: "Helvetica-Bold",
+        color: "#0a0a0a",
+        marginBottom: 4,
+      },
+      jobTitle: { fontSize: 11, color: "#404040", marginBottom: 0 },
+      contact: { marginTop: 10, fontSize: 10, color: "#525252", lineHeight: 1.45 },
+      section: { marginTop: 18 },
+      sectionTitle: {
+        fontSize: 9,
+        fontFamily: "Helvetica-Bold",
+        textTransform: "uppercase",
+        letterSpacing: 1.4,
+        color: "#171717",
+        marginBottom: 8,
+      },
+      body: { fontSize: 10, color: "#262626", lineHeight: 1.6 },
+      itemMain: {
+        fontSize: 10,
+        fontFamily: "Helvetica-Bold",
+        color: "#0a0a0a",
+        flex: 1,
+        paddingRight: 8,
+      },
+      itemDates: { fontSize: 9, color: "#525252", width: 120, textAlign: "right" },
+      itemCo: { fontSize: 9, fontFamily: "Helvetica-Bold", color: "#262626", flex: 1, paddingRight: 8 },
+      itemLoc: { fontSize: 9, color: "#525252", width: 140, textAlign: "right" },
+      desc: { fontSize: 10, color: "#262626", marginTop: 4, marginBottom: 5, lineHeight: 1.6 },
+      skillsLine: { fontSize: 10, color: "#262626", lineHeight: 1.55 },
+      ...base,
+      bullet: { ...base.bullet, color: "#262626" },
+      bulletText: { ...base.bulletText, color: "#262626" },
+    });
+  }
+
+  if (templateId === "creative") {
+    return StyleSheet.create({
+      page: {
+        padding: 42,
+        paddingBottom: 50,
+        fontFamily: "Helvetica",
+        fontSize: 10,
+        lineHeight: 1.6,
+        color: "#171717",
+      },
+      headerRule: {
+        borderBottomWidth: 1,
+        borderBottomColor: "#d4d4d4",
+        paddingBottom: 14,
+      },
+      headerBand: {},
+      name: {
+        fontSize: 24,
+        fontFamily: "Helvetica-Bold",
+        color: "#0a0a0a",
+        marginBottom: 5,
+      },
+      jobTitle: { fontSize: 11, color: "#404040", marginBottom: 0, fontFamily: "Helvetica-Bold" },
+      contact: { marginTop: 10, fontSize: 10, color: "#525252", lineHeight: 1.45 },
+      section: { marginTop: 20 },
+      sectionTitle: {
+        fontSize: 9,
+        fontFamily: "Helvetica-Bold",
+        textTransform: "uppercase",
+        letterSpacing: 1.3,
+        color: "#ffffff",
+        backgroundColor: accent,
+        paddingTop: 3,
+        paddingBottom: 3,
+        paddingLeft: 8,
+        paddingRight: 8,
+        marginBottom: 8,
+        borderRadius: 8,
+      },
+      body: { fontSize: 10, color: "#404040", lineHeight: 1.65 },
+      itemMain: {
+        fontSize: 10,
+        fontFamily: "Helvetica-Bold",
+        color: "#0a0a0a",
+        flex: 1,
+        paddingRight: 8,
+      },
+      itemDates: { fontSize: 9, color: "#737373", width: 120, textAlign: "right" },
+      itemCo: { fontSize: 9, fontFamily: "Helvetica-Bold", color: "#404040", flex: 1, paddingRight: 8 },
+      itemLoc: { fontSize: 9, color: "#737373", width: 140, textAlign: "right" },
+      desc: { fontSize: 10, color: "#404040", marginTop: 4, marginBottom: 5, lineHeight: 1.65 },
       skillsLine: { fontSize: 10, color: "#404040", lineHeight: 1.55 },
       ...base,
       bullet: { ...base.bullet, color: "#404040" },

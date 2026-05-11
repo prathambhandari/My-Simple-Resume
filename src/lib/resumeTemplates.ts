@@ -41,6 +41,24 @@ export const RESUME_TEMPLATE_OPTIONS: {
     description:
       "Bold header band with high contrast; linear content order is preserved for ATS parsing.",
   },
+  {
+    id: "sidebar",
+    name: "Sidebar Focus",
+    description:
+      "Two-column design with a dedicated profile rail for contact and skills, ideal for visual scanning.",
+  },
+  {
+    id: "timeline",
+    name: "Career Timeline",
+    description:
+      "Vertical timeline treatment for experience and education with clear chronology and compact rhythm.",
+  },
+  {
+    id: "creative",
+    name: "Creative Pulse",
+    description:
+      "Design-forward look with accent section labels, pill skills, and stronger visual hierarchy.",
+  },
 ];
 
 export const isValidTemplateId = (id: unknown): id is TemplateType =>

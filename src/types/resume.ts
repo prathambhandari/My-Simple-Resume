@@ -118,7 +118,10 @@ export type TemplateType =
   | "executive"
   | "compact"
   | "minimal"
-  | "signature";
+  | "signature"
+  | "sidebar"
+  | "timeline"
+  | "creative";
 
 export const defaultResumeData: ResumeData = {
   personalInfo: {
