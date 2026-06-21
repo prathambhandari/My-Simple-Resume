@@ -4,7 +4,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "group/button inline-flex shrink-0 items-center justify-center rounded-full border border-transparent bg-clip-padding text-[15px] font-medium tracking-[-0.02em] whitespace-nowrap transition-colors outline-none select-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#0099ff] focus-visible:outline-offset-[3px] disabled:pointer-events-none disabled:opacity-50 aria-invalid:focus-visible:outline-destructive [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "group/button inline-flex shrink-0 items-center justify-center rounded-full border border-transparent bg-clip-padding text-[15px] font-medium tracking-[-0.02em] whitespace-nowrap transition-[color,transform,opacity] duration-150 outline-none select-none touch-manipulation active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-[3px] disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:focus-visible:outline-destructive [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
@@ -18,7 +18,7 @@ const buttonVariants = cva(
           "text-white hover:bg-white/10 aria-expanded:bg-white/10 rounded-full",
         destructive:
           "bg-destructive/15 text-destructive hover:bg-destructive/25 dark:bg-destructive/20 dark:hover:bg-destructive/35",
-        link: "rounded-none px-0 py-0 font-normal text-[#0099ff] underline decoration-1 underline-offset-4 shadow-none hover:text-[#0099ff]/85 h-auto hover:underline focus-visible:outline-none focus-visible:shadow-none",
+        link: "rounded-none px-0 py-0 font-normal text-foreground underline decoration-1 underline-offset-4 shadow-none hover:text-foreground/85 h-auto hover:underline focus-visible:outline-none focus-visible:shadow-none",
       },
       size: {
         default:

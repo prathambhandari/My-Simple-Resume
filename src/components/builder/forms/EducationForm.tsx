@@ -10,8 +10,16 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
-import { Check, GraduationCap, Pencil, Plus, Trash2 } from "lucide-react";
+import {
+  Check,
+  GraduationCap,
+  PencilSimple as Pencil,
+  Plus,
+  TrashSimple as Trash2,
+} from "@phosphor-icons/react";
 import { DatePickerDialog } from "@/components/builder/forms/DatePickerDialog";
+import { analyticsEvents } from "@/lib/analytics";
+import { clickableCardProps, stopCardActionBubble } from "@/lib/clickableCard";
 
 const formSchema = z.object({
   education: z.array(educationSchema),
@@ -56,12 +64,14 @@ export function EducationForm() {
   };
 
   const onSubmit = (values: FormValues) => {
+    analyticsEvents.stepCompleted(4, "education");
     collapseEditor();
     updateData({ education: values.education });
     nextStep();
   };
 
   const addEducation = () => {
+    analyticsEvents.itemAdded("education", 4);
     collapseEditor();
     append({
       id: Date.now().toString(36) + Math.random().toString(36).substring(2),
@@ -82,6 +92,7 @@ export function EducationForm() {
   };
 
   const handleRemove = (index: number) => {
+    analyticsEvents.itemRemoved("education", 4);
     remove(index);
     if (editingIndex === index) {
       setEditingIndex(null);
@@ -91,11 +102,11 @@ export function EducationForm() {
   };
 
   return (
-    <Card className="overflow-visible rounded-none border-none bg-transparent shadow-none ring-0">
+    <Card className="overflow-visible rounded-none border-none bg-transparent py-0 shadow-none ring-0">
       <CardContent className="p-5 md:p-6">
         <div className="mb-6">
           <span className="text-mono-label text-muted-foreground">Step 4</span>
-          <h2 className="font-heading mt-2 text-2xl font-medium tracking-[-0.06em] text-foreground">
+          <h2 className="font-heading mt-2 text-xl font-medium tracking-[-0.06em] text-foreground">
             Education
           </h2>
           <p className="text-muted-foreground text-sm mt-1 font-[330] tracking-[-0.1px] leading-relaxed">
@@ -118,10 +129,11 @@ export function EducationForm() {
               return (
                 <div
                   key={field.id}
-                  className="group relative rounded-lg border border-white/[0.08] bg-white/[0.03] p-4 transition-colors hover:border-[#0099ff]/40"
+                  {...clickableCardProps(() => startEdit(index))}
+                  className="group relative rounded-lg border border-white/[0.08] bg-white/[0.03] p-4 transition-colors hover:border-ring/40 cursor-pointer"
                 >
                   <div className="flex items-start gap-3">
-                    <div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-white/[0.05] text-[#0099ff]">
+                    <div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-white/[0.05] text-foreground">
                       <GraduationCap className="size-4" />
                     </div>
                     <div className="min-w-0 flex-1">
@@ -137,7 +149,11 @@ export function EducationForm() {
                         </p>
                       )}
                     </div>
-                    <div className="flex shrink-0 items-center gap-1">
+                    <div
+                      className="flex shrink-0 items-center gap-1"
+                      onClick={stopCardActionBubble}
+                      onKeyDown={stopCardActionBubble}
+                    >
                       <Button
                         type="button"
                         variant="ghost"
@@ -169,7 +185,7 @@ export function EducationForm() {
             return (
               <div
                 key={field.id}
-                className="relative rounded-lg border border-[#0099ff]/40 bg-white/[0.04] p-4 ring-1 ring-[rgba(0,153,255,0.18)]"
+                className="relative rounded-lg border border-ring/40 bg-white/[0.04] p-4 ring-1 ring-cal-brand-glow"
               >
                 <Button
                   type="button"
@@ -298,9 +314,16 @@ export function EducationForm() {
             </Button>
           )}
 
-          <div className="form-action-bleed pt-6">
+          <div className="form-footer-flat pt-6">
             <div className="flex justify-between gap-4">
-              <Button type="button" variant="outline" onClick={prevStep}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  analyticsEvents.stepBack(4, 3);
+                  prevStep();
+                }}
+              >
                 Back
               </Button>
               <Button

@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { analyticsEvents } from "@/lib/analytics";
 
 export function ProfessionalSummaryForm() {
   const { data, updateData, nextStep, prevStep } = useResumeStore();
@@ -21,6 +22,7 @@ export function ProfessionalSummaryForm() {
   });
 
   const onSubmit = (values: ProfessionalSummary) => {
+    analyticsEvents.stepCompleted(2, "professional_summary");
     updateData({ summary: values.summary });
     nextStep();
   };
@@ -33,11 +35,11 @@ export function ProfessionalSummaryForm() {
   }, [form.watch, updateData]);
 
   return (
-    <Card className="overflow-visible rounded-none border-none bg-transparent shadow-none ring-0">
+    <Card className="overflow-visible rounded-none border-none bg-transparent py-0 shadow-none ring-0">
       <CardContent className="p-5 md:p-6">
         <div className="mb-6">
           <span className="text-mono-label text-muted-foreground">Step 2</span>
-          <h2 className="font-heading mt-2 text-2xl font-medium tracking-[-0.06em] text-foreground">
+          <h2 className="font-heading mt-2 text-xl font-medium tracking-[-0.06em] text-foreground">
             Professional summary
           </h2>
         </div>
@@ -76,9 +78,16 @@ export function ProfessionalSummaryForm() {
             )}
           </div>
 
-          <div className="form-action-bleed pt-4">
+          <div className="form-footer-flat pt-4">
             <div className="flex justify-between gap-4">
-              <Button type="button" variant="outline" onClick={prevStep}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  analyticsEvents.stepBack(2, 1);
+                  prevStep();
+                }}
+              >
                 Back
               </Button>
               <Button

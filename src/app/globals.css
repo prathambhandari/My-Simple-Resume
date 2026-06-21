@@ -4,15 +4,17 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Framer-inspired dark system (DESIGN.md): void black, Framer Blue accent, elevated #090909 */
+/* Cal.com dark theme: grayscale surfaces, white brand accent, Cal Sans typography */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-inter, ui-sans-serif), system-ui, -apple-system, sans-serif;
-  --font-heading: var(--font-outfit, ui-sans-serif), system-ui, sans-serif;
+  --font-sans: var(--font-cal-sans-ui, ui-sans-serif), system-ui, -apple-system, sans-serif;
+  --font-heading: var(--font-cal-sans-ui, ui-sans-serif), system-ui, sans-serif;
   --font-mono: var(--font-jetbrains, ui-monospace), "SF Mono", menlo, monospace;
-  --color-framer-blue: #0099ff;
-  --color-framer-glow: rgba(0, 153, 255, 0.15);
+  --color-cal-brand: var(--cal-brand);
+  --color-cal-brand-glow: var(--cal-brand-glow);
+  --color-framer-blue: var(--cal-brand);
+  --color-framer-glow: var(--cal-brand-glow);
   --color-resume-accent: var(--resume-accent);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -53,38 +55,40 @@
 }
 
 :root {
-  --resume-accent: #0099ff;
+  --resume-accent: #ffffff;
 
-  --background: #000000;
-  --foreground: #ffffff;
+  --cal-brand: #ffffff;
+  --cal-brand-emphasis: #a3a3a3;
+  --cal-brand-glow: rgba(255, 255, 255, 0.12);
 
-  --card: #090909;
-  --card-foreground: #ffffff;
+  --background: #171717;
+  --foreground: #fafafa;
 
-  --popover: #090909;
-  --popover-foreground: #ffffff;
+  --card: #171717;
+  --card-foreground: #fafafa;
 
-  /* Solid white pill CTA */
+  --popover: #171717;
+  --popover-foreground: #fafafa;
+
   --primary: #ffffff;
   --primary-foreground: #000000;
 
-  /* Frosted interactive */
-  --secondary: rgba(255, 255, 255, 0.1);
-  --secondary-foreground: #ffffff;
+  --secondary: #262626;
+  --secondary-foreground: #d4d4d4;
 
-  --muted: rgba(255, 255, 255, 0.08);
-  --muted-foreground: #a6a6a6;
+  --muted: #171717;
+  --muted-foreground: #a3a3a3;
 
-  --accent: rgba(255, 255, 255, 0.1);
-  --accent-foreground: #ffffff;
+  --accent: #262626;
+  --accent-foreground: #fafafa;
 
-  --destructive: #ff6b6b;
+  --destructive: #fca5a5;
   --border: rgba(255, 255, 255, 0.12);
   --input: rgba(255, 255, 255, 0.12);
-  --ring: #0099ff;
+  --ring: #ffffff;
 
-  --chart-1: #0099ff;
-  --chart-2: #a6a6a6;
+  --chart-1: #fafafa;
+  --chart-2: #a3a3a3;
   --chart-3: #737373;
   --chart-4: #525252;
   --chart-5: #404040;
@@ -93,25 +97,30 @@
 }
 
 .dark {
-  --resume-accent: #0099ff;
-  --background: #000000;
-  --foreground: #ffffff;
-  --card: #090909;
-  --card-foreground: #ffffff;
-  --popover: #090909;
-  --popover-foreground: #ffffff;
+  --resume-accent: #ffffff;
+
+  --cal-brand: #ffffff;
+  --cal-brand-emphasis: #a3a3a3;
+  --cal-brand-glow: rgba(255, 255, 255, 0.12);
+
+  --background: #171717;
+  --foreground: #fafafa;
+  --card: #171717;
+  --card-foreground: #fafafa;
+  --popover: #171717;
+  --popover-foreground: #fafafa;
   --primary: #ffffff;
   --primary-foreground: #000000;
-  --secondary: rgba(255, 255, 255, 0.1);
-  --secondary-foreground: #ffffff;
-  --muted: rgba(255, 255, 255, 0.08);
-  --muted-foreground: #a6a6a6;
-  --accent: rgba(255, 255, 255, 0.1);
-  --accent-foreground: #ffffff;
-  --destructive: #ff6b6b;
+  --secondary: #262626;
+  --secondary-foreground: #d4d4d4;
+  --muted: #171717;
+  --muted-foreground: #a3a3a3;
+  --accent: #262626;
+  --accent-foreground: #fafafa;
+  --destructive: #fca5a5;
   --border: rgba(255, 255, 255, 0.12);
   --input: rgba(255, 255, 255, 0.12);
-  --ring: #0099ff;
+  --ring: #ffffff;
 }
 
 @layer base {
@@ -131,14 +140,9 @@
 
   html {
     @apply font-sans antialiased;
-    font-feature-settings:
-      "kern" 1,
-      "cv01" 1,
-      "cv05" 1,
-      "cv09" 1,
-      "cv11" 1,
-      "ss03" 1,
-      "ss07" 1;
+    font-feature-settings: "kern" 1;
+    font-optical-sizing: auto;
+    scroll-behavior: smooth;
     scrollbar-width: none;
     -ms-overflow-style: none;
   }
@@ -165,6 +169,7 @@
   .font-heading {
     font-family: var(--font-heading), var(--font-sans);
     font-weight: 500;
+    font-optical-sizing: auto;
   }
 
   /* Links only — buttons use component focus styles (avoid duplicate rings + Safari hairlines). */
@@ -181,26 +186,43 @@
 }
 
 @layer utilities {
-  /** Top flow progress bar — multi-stop read (not flat blue on a 1px strip). */
+  /** Top flow progress bar — Cal.com neutral emphasis gradient. */
   .flow-progress-gradient {
     background: linear-gradient(
       90deg,
-      #a855f7 0%,
-      #6366f1 22%,
-      #0099ff 52%,
-      #22d3ee 82%,
-      #2dd4bf 100%
+      #737373 0%,
+      #a3a3a3 45%,
+      #ffffff 100%
     );
   }
 
   .ring-framer {
-    box-shadow: inset 0 0 0 1px rgba(0, 153, 255, 0.15);
+    box-shadow: inset 0 0 0 1px var(--cal-brand-glow);
   }
 
   .shadow-framer-float {
-    box-shadow:
-      rgba(255, 255, 255, 0.06) 0px 0.5px 0px 0.5px,
-      rgba(0, 0, 0, 0.35) 0px 12px 36px;
+    box-shadow: none;
+  }
+
+  .form-footer-flat {
+    position: relative;
+    background-color: var(--background);
+  }
+
+  .form-footer-flat::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: -2rem;
+    right: -2rem;
+    height: 4rem;
+    background-color: var(--background);
+    pointer-events: none;
+  }
+
+  .form-footer-flat > * {
+    position: relative;
+    z-index: 1;
   }
 
   .text-display {
@@ -238,33 +260,12 @@
     background-color: rgba(255, 255, 255, 0.1);
   }
 
-  /**
-   * Full-bleed black behind step footers — covers stray gray/WebKit hairlines under CTAs.
-   * Matches CardContent horizontal padding (p-5 / md:p-6).
-   */
-  .form-action-bleed {
-    margin-left: -1.25rem;
-    margin-right: -1.25rem;
-    padding-left: 1.25rem;
-    padding-right: 1.25rem;
-    padding-bottom: max(3rem, env(safe-area-inset-bottom, 0px));
-    background-color: var(--background);
-    border: 0 !important;
-    box-shadow: none !important;
-  }
-  @media (min-width: 768px) {
-    .form-action-bleed {
-      margin-left: -1.5rem;
-      margin-right: -1.5rem;
-      padding-left: 1.5rem;
-      padding-right: 1.5rem;
-    }
-  }
-
   .custom-scrollbar,
   .scrollbar-none {
     -ms-overflow-style: none !important;
     scrollbar-width: none !important;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
   }
   .custom-scrollbar::-webkit-scrollbar,
   .scrollbar-none::-webkit-scrollbar {

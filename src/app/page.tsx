@@ -8,12 +8,13 @@ import { EducationForm } from "@/components/builder/forms/EducationForm";
 import { SkillsAndExtrasForm } from "@/components/builder/forms/SkillsAndExtrasForm";
 import { ReviewAndFinalize } from "@/components/builder/forms/ReviewAndFinalize";
 import { LivePreview } from "@/components/builder/preview/LivePreview";
-import { useEffect, useState } from "react";
-import { Eye, X, LayoutGrid } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Eye, X } from "@phosphor-icons/react";
 import Link from "next/link";
 import { PaginatedTemplate } from "@/components/builder/templates/PaginatedTemplate";
 import { cn } from "@/lib/utils";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { analyticsEvents } from "@/lib/analytics";
 
 const TOTAL_FLOW_STEPS = 6;
 
@@ -29,17 +30,16 @@ export default function BuilderPage() {
         "Clear all resume data and start over from step 1? This cannot be undone.",
       )
     ) {
+      analyticsEvents.resetResume();
       resetStore();
     }
   };
-  const [mounted, setMounted] = useState(false);
   const [mobilePreviewOpen, setMobilePreviewOpen] = useState(false);
+  const formScrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) return null;
+    formScrollRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+  }, [currentStep]);
 
   const renderFormStep = () => {
     switch (currentStep) {
@@ -67,9 +67,9 @@ export default function BuilderPage() {
 
   return (
     <div className="flex min-h-[100dvh] min-h-screen flex-col bg-background text-foreground transition-colors duration-300">
-      <header className="sticky top-0 z-50 w-full border-b border-white/[0.08] bg-black/70 backdrop-blur-xl supports-[backdrop-filter]:bg-black/55">
+      <header className="sticky top-0 z-50 w-full border-b border-white/[0.08] bg-background/95 backdrop-blur-xl supports-[backdrop-filter]:bg-background/80">
         <div className="mx-auto flex w-full max-w-[min(1320px,calc(100vw-2rem))] flex-nowrap items-center gap-3 px-4 py-3 sm:gap-4 sm:px-6 md:h-16 md:py-0">
-          <span className="font-heading min-w-0 flex-1 truncate text-xl font-medium tracking-[-0.06em] text-white sm:text-2xl">
+          <span className="font-heading min-w-0 flex-1 truncate text-lg font-medium tracking-[-0.06em] text-white sm:text-xl">
             My Simple Resume
           </span>
           <div className="flex shrink-0 items-center gap-1 sm:gap-2">
@@ -80,8 +80,7 @@ export default function BuilderPage() {
                 "text-[15px] tracking-[-0.02em] text-white",
               )}
             >
-              <LayoutGrid className="size-4 sm:mr-1" aria-hidden />
-              <span className="hidden sm:inline">Templates</span>
+              <span>Templates</span>
             </Link>
             <Button
               type="button"
@@ -113,18 +112,19 @@ export default function BuilderPage() {
         />
       </div>
 
-      <main className="scrollbar-none flex min-h-0 flex-1 overflow-x-clip border-b border-black px-4 pt-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:px-6 sm:pb-6 lg:overflow-x-auto lg:overflow-y-hidden lg:pb-6">
+      <main className="scrollbar-none flex min-h-0 flex-1 flex-col overflow-hidden bg-background px-4 pt-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:px-6 lg:pb-0">
         <div
           className={cn(
-            "mx-auto grid w-full max-w-[min(1320px,calc(100vw-2rem))] gap-x-10 gap-y-8 lg:items-start lg:justify-center",
+            "mx-auto grid w-full min-h-0 flex-1 max-w-[min(1320px,calc(100vw-2rem))] gap-x-10 gap-y-8 lg:items-stretch lg:justify-center",
             currentStep === 6
               ? "lg:grid-cols-[minmax(0,0.4fr)_minmax(0,0.6fr)]"
               : "lg:grid-cols-[440px_minmax(816px,1fr)]",
           )}
         >
           <div
+            ref={formScrollRef}
             className={cn(
-              "custom-scrollbar min-w-0 self-start transition-all duration-300 lg:h-[calc(100dvh-6.5rem)] lg:overflow-y-auto lg:pb-12",
+              "custom-scrollbar relative z-10 min-h-0 min-w-0 overflow-y-auto overflow-x-hidden bg-background transition-all duration-300 overscroll-contain",
               currentStep === 6
                 ? "w-full"
                 : "mx-auto w-full max-w-[440px] justify-self-start lg:mx-0 lg:w-full lg:max-w-none",
@@ -133,7 +133,7 @@ export default function BuilderPage() {
             {renderFormStep()}
           </div>
 
-          <div className="hidden min-h-0 min-w-0 justify-self-start lg:block">
+          <div className="hidden min-h-0 min-w-0 overflow-hidden lg:block">
             <LivePreview />
           </div>
         </div>
@@ -144,7 +144,10 @@ export default function BuilderPage() {
         <Button
           type="button"
           size="lg"
-          onClick={() => setMobilePreviewOpen(true)}
+          onClick={() => {
+            analyticsEvents.mobilePreviewOpened(currentStep);
+            setMobilePreviewOpen(true);
+          }}
           className="gap-2 shadow-none"
         >
           <Eye className="size-5" />
@@ -154,8 +157,17 @@ export default function BuilderPage() {
 
       {/* Mobile Full-Screen Preview Overlay */}
       {mobilePreviewOpen && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 px-3 pb-6 pt-24 backdrop-blur-md lg:hidden">
-          <div className="flex h-full w-full flex-col overflow-hidden rounded-xl border border-white/[0.12] bg-card text-card-foreground shadow-framer-float animate-in slide-in-from-bottom-12 fade-in duration-300 ring-1 ring-[rgba(0,153,255,0.15)]">
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 px-3 pb-6 pt-24 backdrop-blur-md lg:hidden"
+          onClick={() => setMobilePreviewOpen(false)}
+          role="presentation"
+        >
+          <div
+            className="flex h-full w-full flex-col overflow-hidden rounded-xl border border-white/[0.12] bg-card text-card-foreground shadow-framer-float animate-in slide-in-from-bottom-12 fade-in duration-300 ring-1 ring-cal-brand-glow"
+            onClick={(event) => event.stopPropagation()}
+            role="dialog"
+            aria-label="Live preview"
+          >
             <div className="flex items-center justify-between border-b border-white/[0.08] p-4">
               <h3 className="font-heading ml-2 text-lg font-medium tracking-[-0.04em]">
                 Live Preview
@@ -168,7 +180,7 @@ export default function BuilderPage() {
                 <X className="size-5" />
               </button>
             </div>
-            <div className="custom-scrollbar relative flex-1 overflow-y-auto overflow-x-hidden bg-black p-4">
+            <div className="custom-scrollbar relative flex-1 overflow-y-auto overflow-x-hidden bg-background p-4">
               <div className="flex w-full items-start justify-center">
                 <div className="origin-top scale-[0.68] transition-transform duration-300">
                   <PaginatedTemplate templateId={template} />

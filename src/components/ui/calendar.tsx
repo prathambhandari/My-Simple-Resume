@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { DayPicker } from "react-day-picker";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { CaretLeft, CaretRight } from "@phosphor-icons/react";
 
 import { cn } from "@/lib/utils";
 
@@ -35,11 +35,11 @@ export function Calendar({
           "text-muted-foreground rounded-md w-9 font-normal text-[0.8rem]",
         row: "flex w-full mt-2",
         cell: "relative p-0 text-center text-sm focus-within:relative focus-within:z-20",
-        day: "inline-flex size-9 items-center justify-center rounded-md text-sm font-normal text-foreground hover:bg-white/10 aria-selected:bg-framer-blue aria-selected:text-white",
+        day: "inline-flex size-9 items-center justify-center rounded-md text-sm font-normal text-foreground hover:bg-white/10 aria-selected:bg-cal-brand aria-selected:text-primary-foreground",
         day_selected:
-          "bg-framer-blue text-white hover:bg-framer-blue/90",
+          "bg-cal-brand text-primary-foreground hover:bg-cal-brand/90",
         day_today:
-          "border border-framer-blue/50",
+          "border border-cal-brand/50",
         day_outside:
           "text-muted-foreground opacity-40",
         day_disabled: "text-muted-foreground opacity-30",
@@ -48,8 +48,8 @@ export function Calendar({
       }}
       components={{
         Chevron: ({ orientation }) => {
-          if (orientation === "left") return <ChevronLeft className="size-4" />;
-          if (orientation === "right") return <ChevronRight className="size-4" />;
+          if (orientation === "left") return <CaretLeft className="size-4" />;
+          if (orientation === "right") return <CaretRight className="size-4" />;
           return <span className="size-4" />;
         },
       }}

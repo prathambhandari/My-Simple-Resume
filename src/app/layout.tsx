@@ -1,19 +1,16 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono, Outfit } from "next/font/google";
+import localFont from "next/font/local";
+import { JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-  display: "swap",
-});
-
-const outfit = Outfit({
-  subsets: ["latin"],
-  variable: "--font-outfit",
+const calSans = localFont({
+  src: "../fonts/CalSansUI.woff2",
+  variable: "--font-cal-sans-ui",
+  weight: "300 700",
   display: "swap",
 });
 
@@ -39,7 +36,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${inter.variable} ${outfit.variable} ${jetbrainsMono.variable} dark`}
+      className={`${calSans.variable} ${jetbrainsMono.variable} dark`}
     >
       <body className="min-h-[100dvh] min-h-screen overflow-x-clip bg-background font-sans antialiased">
         <ThemeProvider
@@ -51,6 +48,7 @@ export default function RootLayout({
         >
           {children}
           <Analytics />
+          <SpeedInsights />
           <Toaster />
         </ThemeProvider>
       </body>

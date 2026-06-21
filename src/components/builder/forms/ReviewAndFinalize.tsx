@@ -3,11 +3,12 @@
 import { useState, useEffect } from "react";
 import { useResumeStore } from "@/store/useResumeStore";
 import { Button } from "@/components/ui/button";
-import { Download, Check } from "lucide-react";
+import { Check, DownloadSimple as Download } from "@phosphor-icons/react";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import { DynamicPDF } from "../pdf/DynamicPDF";
 import { DynamicTemplate } from "../templates/DynamicTemplate";
 import { RESUME_TEMPLATE_OPTIONS } from "@/lib/resumeTemplates";
+import { analyticsEvents } from "@/lib/analytics";
 
 export function ReviewAndFinalize() {
   const { data, template, setTemplate, themeColor, prevStep } =
@@ -28,7 +29,7 @@ export function ReviewAndFinalize() {
     <div className="w-full">
       <div className="mb-6">
         <span className="text-mono-label text-muted-foreground">Step 6</span>
-        <h2 className="font-heading mt-2 text-3xl font-medium tracking-[-0.06em] text-foreground">
+        <h2 className="font-heading mt-2 text-2xl font-medium tracking-[-0.06em] text-foreground">
           Choose resume design
         </h2>
       </div>
@@ -39,7 +40,10 @@ export function ReviewAndFinalize() {
             type="button"
             key={tpl.id}
             className="group relative w-full cursor-pointer overflow-hidden rounded-md bg-transparent p-0 text-left transition-all"
-            onClick={() => setTemplate(tpl.id)}
+            onClick={() => {
+              analyticsEvents.templateSelected(tpl.id, "review_step");
+              setTemplate(tpl.id);
+            }}
             aria-label={`Select ${tpl.name} template`}
           >
             <div
@@ -57,8 +61,8 @@ export function ReviewAndFinalize() {
                 <DynamicTemplate templateId={tpl.id} />
               </div>
               {template === tpl.id && (
-                <div className="absolute right-3 top-3 flex size-7 items-center justify-center rounded-full bg-framer-blue text-white shadow-md">
-                  <Check className="h-4 w-4" strokeWidth={3} />
+                <div className="absolute right-3 top-3 flex size-7 items-center justify-center rounded-full bg-green-600 text-white shadow-md">
+                  <Check className="h-4 w-4 text-white" weight="bold" />
                 </div>
               )}
             </div>
@@ -74,7 +78,14 @@ export function ReviewAndFinalize() {
         </div>
 
         <div className="flex w-full flex-col gap-3">
-          <Button variant="outline" onClick={prevStep} className="h-11 w-full">
+          <Button
+            variant="outline"
+            onClick={() => {
+              analyticsEvents.stepBack(6, 5);
+              prevStep();
+            }}
+            className="h-11 w-full"
+          >
             Back to Edit
           </Button>
 
@@ -85,7 +96,11 @@ export function ReviewAndFinalize() {
               className="block w-full"
             >
               {({ loading }) => (
-                <Button className="h-11 w-full text-base" disabled={loading}>
+                <Button
+                  className="h-11 w-full text-base"
+                  disabled={loading}
+                  onClick={() => analyticsEvents.pdfDownloadClicked(template)}
+                >
                   {loading ? (
                     "Generating PDF..."
                   ) : (

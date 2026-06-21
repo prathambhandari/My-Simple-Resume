@@ -22,6 +22,7 @@ type Props = Omit<
 export function PaginatedTemplate(props: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [pageCount, setPageCount] = useState(1);
+  const repaginateFrameRef = useRef<number | null>(null);
 
   const repaginate = () => {
     const root = containerRef.current;
@@ -84,16 +85,37 @@ export function PaginatedTemplate(props: Props) {
     setPageCount(pages);
   };
 
+  const scheduleRepaginate = () => {
+    if (repaginateFrameRef.current !== null) return;
+    repaginateFrameRef.current = requestAnimationFrame(() => {
+      repaginateFrameRef.current = null;
+      repaginate();
+    });
+  };
+
   useLayoutEffect(() => {
-    repaginate();
+    scheduleRepaginate();
+    return () => {
+      if (repaginateFrameRef.current !== null) {
+        cancelAnimationFrame(repaginateFrameRef.current);
+        repaginateFrameRef.current = null;
+      }
+    };
   });
 
   useEffect(() => {
     const node = containerRef.current;
     if (!node) return;
-    const ro = new ResizeObserver(() => repaginate());
+    let debounceTimer: ReturnType<typeof setTimeout> | undefined;
+    const ro = new ResizeObserver(() => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(scheduleRepaginate, 32);
+    });
     ro.observe(node);
-    return () => ro.disconnect();
+    return () => {
+      clearTimeout(debounceTimer);
+      ro.disconnect();
+    };
   }, []);
 
   const totalHeight =
@@ -108,7 +130,7 @@ export function PaginatedTemplate(props: Props) {
         {Array.from({ length: pageCount }).map((_, i) => (
           <div
             key={i}
-            className="absolute left-0 right-0 rounded-sm border border-border bg-white shadow-sm"
+            className="absolute left-0 right-0 rounded-sm border border-border bg-white shadow-none"
             style={{
               top: i * (PAGE_H + PAGE_GAP),
               height: PAGE_H,

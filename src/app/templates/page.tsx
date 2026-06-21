@@ -1,14 +1,15 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, ArrowRight, Check } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check } from "@phosphor-icons/react";
 import { useResumeStore } from "@/store/useResumeStore";
 import { DynamicTemplate } from "@/components/builder/templates/DynamicTemplate";
 import { RESUME_TEMPLATE_OPTIONS } from "@/lib/resumeTemplates";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { analyticsEvents } from "@/lib/analytics";
+import { useHasHydrated } from "@/lib/useHasHydrated";
 import type { TemplateType } from "@/types/resume";
 import type { ResumeData } from "@/types/resume";
 
@@ -106,14 +107,6 @@ const TEMPLATE_PREVIEW_DATA: ResumeData = {
   ],
 };
 
-function useHasHydrated() {
-  return useSyncExternalStore(
-    (cb) => useResumeStore.persist.onFinishHydration(cb),
-    () => useResumeStore.persist.hasHydrated(),
-    () => false,
-  );
-}
-
 export default function TemplatesPage() {
   const template = useResumeStore((s) => s.template);
   const setTemplate = useResumeStore((s) => s.setTemplate);
@@ -121,19 +114,18 @@ export default function TemplatesPage() {
   const hydrated = useHasHydrated();
 
   const handleSelectTemplate = (id: TemplateType) => {
+    analyticsEvents.templateSelected(id, "templates_page");
     setTemplate(id);
   };
 
   const handleContinueToEditor = () => {
+    analyticsEvents.templatesContinue(template);
     router.push("/");
   };
 
-  const selectedTemplateName =
-    RESUME_TEMPLATE_OPTIONS.find((t) => t.id === template)?.name ?? "Template";
-
   return (
     <div className="flex min-h-[100dvh] min-h-screen flex-col bg-background text-foreground">
-      <header className="sticky top-0 z-50 w-full border-b border-white/[0.08] bg-black/70 backdrop-blur-xl supports-[backdrop-filter]:bg-black/55">
+      <header className="sticky top-0 z-50 w-full border-b border-white/[0.08] bg-background/95 backdrop-blur-xl supports-[backdrop-filter]:bg-background/80">
         <div className="mx-auto flex w-full max-w-[min(1320px,calc(100vw-2rem))] flex-nowrap items-center gap-3 px-4 py-3 sm:gap-4 sm:px-6 md:h-16 md:py-0">
           <Link
             href="/"
@@ -146,35 +138,39 @@ export default function TemplatesPage() {
             <ArrowLeft className="size-4 sm:mr-1" aria-hidden />
             <span className="hidden sm:inline">Back</span>
           </Link>
-          <span className="font-heading min-w-0 flex-1 truncate text-xl font-medium tracking-[-0.06em] text-white sm:text-2xl">
+          <span className="font-heading min-w-0 flex-1 truncate text-lg font-medium tracking-[-0.06em] text-white sm:text-xl">
             My Simple Resume
           </span>
+          <Button onClick={handleContinueToEditor} size="sm" className="shrink-0">
+            Continue to editor
+            <ArrowRight className="size-4" aria-hidden />
+          </Button>
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-[min(1320px,calc(100vw-2rem))] flex-1 px-4 pt-10 pb-32 sm:px-6">
+      <main className="mx-auto w-full max-w-[min(1320px,calc(100vw-2rem))] flex-1 px-4 pt-10 pb-10 sm:px-6">
         <div className="mb-10">
           <span className="text-mono-label text-muted-foreground">
             Templates
           </span>
-          <h1 className="font-heading mt-3 text-4xl font-medium leading-[1.05] tracking-[-0.06em] text-foreground sm:text-5xl">
+          <h1 className="font-heading mt-3 text-3xl font-medium leading-[1.05] tracking-[-0.06em] text-foreground sm:text-4xl">
             Pick a resume design
           </h1>
         </div>
 
-        {hydrated && (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {RESUME_TEMPLATE_OPTIONS.map((tpl) => {
-              const isActive = template === tpl.id;
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {RESUME_TEMPLATE_OPTIONS.map((tpl) => {
+            const isActive = hydrated && template === tpl.id;
               return (
                 <div key={tpl.id} className="group flex flex-col gap-3">
                   <button
                     type="button"
                     onClick={() => handleSelectTemplate(tpl.id)}
                     aria-label={`Select ${tpl.name} template`}
+                    aria-pressed={isActive}
                     className={cn(
                       "relative w-full cursor-pointer overflow-hidden rounded-md bg-white p-0 text-left transition-transform duration-300 hover:-translate-y-1",
-                      "outline-none focus-visible:ring-2 focus-visible:ring-framer-blue focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                      "outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                     )}
                   >
                     <div
@@ -201,14 +197,14 @@ export default function TemplatesPage() {
                           isActive && "opacity-100",
                         )}
                       >
-                        <span className="rounded-full bg-framer-blue px-4 py-2 text-[13px] font-medium tracking-[-0.02em] text-white shadow-lg">
+                        <span className="rounded-full bg-primary px-4 py-2 text-[13px] font-medium tracking-[-0.02em] text-primary-foreground shadow-lg">
                           {isActive ? "Selected" : "Select template"}
                         </span>
                       </div>
 
                       {isActive && (
-                        <div className="absolute right-3 top-3 flex size-7 items-center justify-center rounded-full bg-framer-blue text-white shadow-md">
-                          <Check className="h-4 w-4" strokeWidth={3} />
+                        <div className="absolute right-3 top-3 flex size-7 items-center justify-center rounded-full bg-green-600 text-white shadow-md">
+                          <Check className="h-4 w-4 text-white" weight="bold" />
                         </div>
                       )}
                     </div>
@@ -219,49 +215,17 @@ export default function TemplatesPage() {
                       {tpl.name}
                     </h2>
                     {isActive && (
-                      <span className="text-mono-label text-framer-blue">
+                      <span className="text-mono-label text-foreground">
                         In use
                       </span>
                     )}
                   </div>
-                  <p className="px-1 text-[13px] leading-relaxed text-muted-foreground">
-                    {tpl.description}
-                  </p>
                 </div>
-              );
-            })}
-          </div>
-        )}
+            );
+          })}
+        </div>
 
       </main>
-
-      {hydrated && (
-        <div
-          className="sticky bottom-0 z-40 w-full border-t border-white/[0.08] bg-black/80 backdrop-blur-xl supports-[backdrop-filter]:bg-black/60"
-          role="region"
-          aria-label="Selected template actions"
-        >
-          <div className="mx-auto flex w-full max-w-[min(1320px,calc(100vw-2rem))] flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
-            <div className="flex min-w-0 items-center gap-3">
-              <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-framer-blue text-white shadow-md">
-                <Check className="h-4 w-4" strokeWidth={3} />
-              </span>
-              <div className="min-w-0">
-                <p className="text-mono-label text-muted-foreground">
-                  Selected
-                </p>
-                <p className="font-heading truncate text-base font-medium tracking-[-0.04em] text-foreground">
-                  {selectedTemplateName}
-                </p>
-              </div>
-            </div>
-            <Button onClick={handleContinueToEditor} className="shrink-0">
-              Continue to editor
-              <ArrowRight className="size-4" aria-hidden />
-            </Button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

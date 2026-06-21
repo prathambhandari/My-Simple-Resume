@@ -23,7 +23,7 @@ export const useResumeStore = create<ResumeState>()(
       data: defaultResumeData,
       currentStep: 1,
       template: "standard",
-      themeColor: "#0099ff",
+      themeColor: "#111111",
 
       updateData: (partialData) =>
         set((state) => ({
@@ -51,7 +51,7 @@ export const useResumeStore = create<ResumeState>()(
           data: defaultResumeData,
           currentStep: 1,
           template: "standard",
-          themeColor: "#0099ff",
+          themeColor: "#111111",
         }),
     }),
     {

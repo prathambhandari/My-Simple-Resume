@@ -11,7 +11,15 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { ExternalLink, Pencil, Trash2, Plus, X } from "lucide-react";
+import {
+  ArrowSquareOut as ExternalLink,
+  PencilSimple as Pencil,
+  Plus,
+  TrashSimple as Trash2,
+  X,
+} from "@phosphor-icons/react";
+import { analyticsEvents } from "@/lib/analytics";
+import { clickableCardProps, stopCardActionBubble } from "@/lib/clickableCard";
 
 const formSchema = z.object({
   skills: z.array(skillSchema),
@@ -64,6 +72,7 @@ export function SkillsAndExtrasForm() {
   });
 
   const onSubmit = (values: FormValues) => {
+    analyticsEvents.stepCompleted(5, "skills_and_extras");
     updateData({
       skills: values.skills,
       projects: values.projects,
@@ -86,6 +95,7 @@ export function SkillsAndExtrasForm() {
   }, [form.watch, updateData]);
 
   const addSkill = () => {
+    analyticsEvents.itemAdded("skill", 5);
     appendSkill({
       id: Date.now().toString(36) + Math.random().toString(36).substring(2),
       name: "",
@@ -93,6 +103,7 @@ export function SkillsAndExtrasForm() {
   };
 
   const addProject = () => {
+    analyticsEvents.itemAdded("project", 5);
     appendProject({
       id: Date.now().toString(36) + Math.random().toString(36).substring(2),
       name: "",
@@ -102,6 +113,7 @@ export function SkillsAndExtrasForm() {
     setEditingProjectIndex(projectFields.length);
   };
   const addSection = () => {
+    analyticsEvents.itemAdded("custom_section", 5);
     appendSection({
       id: Date.now().toString(36) + Math.random().toString(36).substring(2),
       title: "",
@@ -111,6 +123,7 @@ export function SkillsAndExtrasForm() {
   };
 
   const handleRemoveSection = (index: number) => {
+    analyticsEvents.itemRemoved("custom_section", 5);
     removeSection(index);
     if (editingSectionIndex === index) {
       setEditingSectionIndex(null);
@@ -120,11 +133,11 @@ export function SkillsAndExtrasForm() {
   };
 
   return (
-    <Card className="overflow-visible rounded-none border-none bg-transparent shadow-none ring-0">
+    <Card className="overflow-visible rounded-none border-none bg-transparent py-0 shadow-none ring-0">
       <CardContent className="p-5 md:p-6">
         <div className="mb-6">
           <span className="text-mono-label text-muted-foreground">Step 5</span>
-          <h2 className="font-heading mt-2 text-2xl font-medium tracking-[-0.06em] text-foreground">
+          <h2 className="font-heading mt-2 text-xl font-medium tracking-[-0.06em] text-foreground">
             Skills &amp; extras
           </h2>
           <p className="text-muted-foreground text-sm mt-1 font-[330] tracking-[-0.1px] leading-relaxed">
@@ -148,7 +161,7 @@ export function SkillsAndExtrasForm() {
                 >
                   <Input
                     placeholder="React.js"
-                    className="h-9 w-40 border-transparent bg-white/3 text-sm focus-visible:border-framer-blue/40"
+                    className="h-9 w-40 border-transparent bg-white/3 text-sm focus-visible:border-ring/40"
                     {...form.register(`skills.${index}.name`)}
                   />
                   <Button
@@ -156,7 +169,10 @@ export function SkillsAndExtrasForm() {
                     variant="ghost"
                     size="icon"
                     className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                    onClick={() => removeSkill(index)}
+                    onClick={() => {
+                      analyticsEvents.itemRemoved("skill", 5);
+                      removeSkill(index);
+                    }}
                   >
                     <Trash2 className="w-4 h-4" />
                   </Button>
@@ -197,7 +213,8 @@ export function SkillsAndExtrasForm() {
                 return (
                   <div
                     key={field.id}
-                    className="group relative rounded-lg border border-white/8 bg-white/3 p-4 transition-colors hover:border-framer-blue/40"
+                    {...clickableCardProps(() => setEditingProjectIndex(index))}
+                    className="group relative rounded-lg border border-white/8 bg-white/3 p-4 transition-colors hover:border-ring/40 cursor-pointer"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
@@ -220,7 +237,11 @@ export function SkillsAndExtrasForm() {
                         ) : null}
                       </div>
 
-                      <div className="flex shrink-0 items-center gap-1">
+                      <div
+                        className="flex shrink-0 items-center gap-1"
+                        onClick={stopCardActionBubble}
+                        onKeyDown={stopCardActionBubble}
+                      >
                         {url ? (
                           <a
                             href={url}
@@ -248,6 +269,7 @@ export function SkillsAndExtrasForm() {
                           size="icon"
                           className="size-8 text-muted-foreground hover:text-destructive"
                           onClick={() => {
+                            analyticsEvents.itemRemoved("project", 5);
                             removeProject(index);
                             if (editingProjectIndex === index) {
                               setEditingProjectIndex(null);
@@ -271,7 +293,7 @@ export function SkillsAndExtrasForm() {
               return (
                 <div
                   key={field.id}
-                  className="relative rounded-lg border border-framer-blue/40 bg-white/4 p-4 ring-1 ring-framer-glow"
+                  className="relative rounded-lg border border-ring/40 bg-white/4 p-4 ring-1 ring-cal-brand-glow"
                 >
                   <Button
                     type="button"
@@ -279,6 +301,7 @@ export function SkillsAndExtrasForm() {
                     size="icon"
                     className="absolute top-2 right-2 text-muted-foreground hover:text-destructive"
                     onClick={() => {
+                      analyticsEvents.itemRemoved("project", 5);
                       removeProject(index);
                       setEditingProjectIndex(null);
                     }}
@@ -393,7 +416,10 @@ export function SkillsAndExtrasForm() {
                   return (
                     <div
                       key={section.id}
-                      className="group relative rounded-lg border border-white/8 bg-white/3 p-4 transition-colors hover:border-framer-blue/40"
+                      {...clickableCardProps(() =>
+                        setEditingSectionIndex(sectionIndex),
+                      )}
+                      className="group relative rounded-lg border border-white/8 bg-white/3 p-4 transition-colors hover:border-ring/40 cursor-pointer"
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
@@ -410,7 +436,11 @@ export function SkillsAndExtrasForm() {
                           ) : null}
                         </div>
 
-                        <div className="flex shrink-0 items-center gap-1">
+                        <div
+                          className="flex shrink-0 items-center gap-1"
+                          onClick={stopCardActionBubble}
+                          onKeyDown={stopCardActionBubble}
+                        >
                           <Button
                             type="button"
                             variant="ghost"
@@ -491,9 +521,16 @@ export function SkillsAndExtrasForm() {
             </Button>
           </div>
 
-          <div className="form-action-bleed pt-6">
+          <div className="form-footer-flat pt-6">
             <div className="flex justify-between gap-4">
-              <Button type="button" variant="outline" onClick={prevStep}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  analyticsEvents.stepBack(5, 4);
+                  prevStep();
+                }}
+              >
                 Back
               </Button>
               <Button

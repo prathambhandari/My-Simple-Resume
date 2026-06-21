@@ -11,8 +11,16 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Briefcase, Check, Pencil, Plus, Trash2 } from "lucide-react";
+import {
+  Briefcase,
+  Check,
+  PencilSimple as Pencil,
+  Plus,
+  TrashSimple as Trash2,
+} from "@phosphor-icons/react";
 import { DatePickerDialog } from "@/components/builder/forms/DatePickerDialog";
+import { analyticsEvents } from "@/lib/analytics";
+import { clickableCardProps, stopCardActionBubble } from "@/lib/clickableCard";
 
 const formSchema = z.object({
   experience: z.array(workExperienceSchema),
@@ -57,12 +65,14 @@ export function WorkExperienceForm() {
   };
 
   const onSubmit = (values: FormValues) => {
+    analyticsEvents.stepCompleted(3, "work_experience");
     collapseEditor();
     updateData({ experience: values.experience });
     nextStep();
   };
 
   const addExperience = () => {
+    analyticsEvents.itemAdded("experience", 3);
     collapseEditor();
     append({
       id: Date.now().toString(36) + Math.random().toString(36).substring(2),
@@ -83,6 +93,7 @@ export function WorkExperienceForm() {
   };
 
   const handleRemove = (index: number) => {
+    analyticsEvents.itemRemoved("experience", 3);
     remove(index);
     if (editingIndex === index) {
       setEditingIndex(null);
@@ -92,11 +103,11 @@ export function WorkExperienceForm() {
   };
 
   return (
-    <Card className="overflow-visible rounded-none border-none bg-transparent shadow-none ring-0">
+    <Card className="overflow-visible rounded-none border-none bg-transparent py-0 shadow-none ring-0">
       <CardContent className="p-5 md:p-6">
         <div className="mb-6">
           <span className="text-mono-label text-muted-foreground">Step 3</span>
-          <h2 className="font-heading mt-2 text-2xl font-medium tracking-[-0.06em] text-foreground">
+          <h2 className="font-heading mt-2 text-xl font-medium tracking-[-0.06em] text-foreground">
             Work experience
           </h2>
         </div>
@@ -113,10 +124,11 @@ export function WorkExperienceForm() {
               return (
                 <div
                   key={field.id}
-                  className="group relative rounded-lg border border-white/[0.08] bg-white/[0.03] p-4 transition-colors hover:border-[#0099ff]/40"
+                  {...clickableCardProps(() => startEdit(index))}
+                  className="group relative rounded-lg border border-white/[0.08] bg-white/[0.03] p-4 transition-colors hover:border-ring/40 cursor-pointer"
                 >
                   <div className="flex items-start gap-3">
-                    <div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-white/[0.05] text-[#0099ff]">
+                    <div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-white/[0.05] text-foreground">
                       <Briefcase className="size-4" />
                     </div>
                     <div className="min-w-0 flex-1">
@@ -137,7 +149,11 @@ export function WorkExperienceForm() {
                         </p>
                       )}
                     </div>
-                    <div className="flex shrink-0 items-center gap-1">
+                    <div
+                      className="flex shrink-0 items-center gap-1"
+                      onClick={stopCardActionBubble}
+                      onKeyDown={stopCardActionBubble}
+                    >
                       <Button
                         type="button"
                         variant="ghost"
@@ -169,7 +185,7 @@ export function WorkExperienceForm() {
             return (
               <div
                 key={field.id}
-                className="relative rounded-lg border border-[#0099ff]/40 bg-white/[0.04] p-4 ring-1 ring-[rgba(0,153,255,0.18)]"
+                className="relative rounded-lg border border-ring/40 bg-white/[0.04] p-4 ring-1 ring-cal-brand-glow"
               >
                 <Button
                   type="button"
@@ -299,9 +315,16 @@ export function WorkExperienceForm() {
             </Button>
           )}
 
-          <div className="form-action-bleed pt-6">
+          <div className="form-footer-flat pt-6">
             <div className="flex justify-between gap-4">
-              <Button type="button" variant="outline" onClick={prevStep}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  analyticsEvents.stepBack(3, 2);
+                  prevStep();
+                }}
+              >
                 Back
               </Button>
               <Button

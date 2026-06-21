@@ -24,7 +24,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ExternalLink, Plus, Trash2 } from "lucide-react";
+import {
+  ArrowSquareOut as ExternalLink,
+  Plus,
+  TrashSimple as Trash2,
+} from "@phosphor-icons/react";
+import { analyticsEvents } from "@/lib/analytics";
 
 type LinkDraft = { title: string; url: string };
 
@@ -54,8 +59,17 @@ export function PersonalInfoForm() {
   }, [draft]);
 
   const onSubmit = (values: PersonalInfo) => {
+    analyticsEvents.stepCompleted(1, "personal_info");
     updateData({ personalInfo: values });
     nextStep();
+  };
+
+  const onInvalid = () => {
+    requestAnimationFrame(() => {
+      document
+        .querySelector("[aria-invalid='true']")
+        ?.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
   };
 
   useEffect(() => {
@@ -66,16 +80,19 @@ export function PersonalInfoForm() {
   }, [form.watch, updateData]);
 
   return (
-    <Card className="overflow-visible rounded-none border-none bg-transparent shadow-none ring-0">
+    <Card className="overflow-visible rounded-none border-none bg-transparent py-0 shadow-none ring-0">
       <CardContent className="p-5 md:p-6">
         <div className="mb-6">
           <span className="text-mono-label text-muted-foreground">Step 1</span>
-          <h2 className="font-heading mt-2 text-2xl font-medium tracking-[-0.06em] text-foreground">
+          <h2 className="font-heading mt-2 text-xl font-medium tracking-[-0.06em] text-foreground">
             Personal information
           </h2>
         </div>
 
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <form
+          onSubmit={form.handleSubmit(onSubmit, onInvalid)}
+          className="space-y-6"
+        >
           <div className="grid grid-cols-1 gap-4">
             <div className="space-y-2">
               <Label htmlFor="fullName">
@@ -193,6 +210,7 @@ export function PersonalInfoForm() {
                     size="sm"
                     className="h-9 gap-2"
                     onClick={() => {
+                      analyticsEvents.itemAdded("link_dialog_opened", 1);
                       setDraft({ title: "", url: "" });
                       setLinkDialogOpen(true);
                     }}
@@ -237,7 +255,10 @@ export function PersonalInfoForm() {
                           variant="ghost"
                           size="icon"
                           className="size-8 text-muted-foreground hover:text-destructive"
-                          onClick={() => removeLink(idx)}
+                          onClick={() => {
+                            analyticsEvents.itemRemoved("link", 1);
+                            removeLink(idx);
+                          }}
                           aria-label="Remove link"
                         >
                           <Trash2 className="size-4" />
@@ -250,7 +271,7 @@ export function PersonalInfoForm() {
             </div>
           </div>
 
-          <div className="form-action-bleed pt-4">
+          <div className="form-footer-flat pt-4">
             <div className="flex justify-end">
               <Button
                 type="submit"
@@ -311,6 +332,7 @@ export function PersonalInfoForm() {
                 type="button"
                 disabled={!canAddLink}
                 onClick={() => {
+                  analyticsEvents.itemAdded("link", 1);
                   appendLink({
                     id:
                       Date.now().toString(36) +
