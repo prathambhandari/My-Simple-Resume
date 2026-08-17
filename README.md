@@ -1,36 +1,30 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# My Simple Resume
 
-## Getting Started
+Chat-first resume builder. Preview on the left, chat on the right. Data stays in this browser.
 
-First, run the development server:
+## Run locally
+
+1. Copy `.env.example` to `.env`
+2. Add `GROQ_API_KEY=` (or `OPENAI_API_KEY` / `OPENROUTER_API_KEY`)
+3. Restart after changing env:
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## What it does
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Import a PDF/Word resume in chat
+- Edit the resume and cover letter by chatting
+- Photo, undo/history, multiple resumes
+- Export PDF, Word, cover letter PDF, or a JSON backup
+- Token count is stored on this device only
 
-## Learn More
+## Backup
 
-To learn more about Next.js, take a look at the following resources:
+Use **Export → Backup JSON** to move resumes to another computer, then **Import backup**.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Chat uses the API key on the server. If you deploy this app, that key is shared by everyone who uses the site.

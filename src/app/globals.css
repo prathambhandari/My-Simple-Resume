@@ -4,18 +4,11 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Cal.com dark theme: grayscale surfaces, white brand accent, Cal Sans typography */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-cal-sans-ui, ui-sans-serif), system-ui, -apple-system, sans-serif;
-  --font-heading: var(--font-cal-sans-ui, ui-sans-serif), system-ui, sans-serif;
-  --font-mono: var(--font-jetbrains, ui-monospace), "SF Mono", menlo, monospace;
-  --color-cal-brand: var(--cal-brand);
-  --color-cal-brand-glow: var(--cal-brand-glow);
-  --color-framer-blue: var(--cal-brand);
-  --color-framer-glow: var(--cal-brand-glow);
-  --color-resume-accent: var(--resume-accent);
+  --font-sans: var(--font-noto-sans);
+  --font-mono: var(--font-geist-mono);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -45,233 +38,168 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  --radius-sm: 8px;
-  --radius-md: 10px;
-  --radius-lg: 12px;
-  --radius-xl: 15px;
-  --radius-2xl: 20px;
-  --radius-3xl: 40px;
-  --radius-4xl: 100px;
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
 }
 
 :root {
-  --resume-accent: #ffffff;
-
-  --cal-brand: #ffffff;
-  --cal-brand-emphasis: #a3a3a3;
-  --cal-brand-glow: rgba(255, 255, 255, 0.12);
-
-  --background: #171717;
-  --foreground: #fafafa;
-
-  --card: #171717;
-  --card-foreground: #fafafa;
-
-  --popover: #171717;
-  --popover-foreground: #fafafa;
-
-  --primary: #ffffff;
-  --primary-foreground: #000000;
-
-  --secondary: #262626;
-  --secondary-foreground: #d4d4d4;
-
-  --muted: #171717;
-  --muted-foreground: #a3a3a3;
-
-  --accent: #262626;
-  --accent-foreground: #fafafa;
-
-  --destructive: #fca5a5;
+  --radius: 1rem;
+  --background: #0e141c;
+  --foreground: #eef2f6;
+  --card: rgba(18, 26, 36, 0.55);
+  --card-foreground: #eef2f6;
+  --popover: rgba(18, 26, 36, 0.82);
+  --popover-foreground: #eef2f6;
+  --primary: #0081ff;
+  --primary-foreground: #ffffff;
+  --secondary: rgba(255, 255, 255, 0.08);
+  --secondary-foreground: #eef2f6;
+  --muted: rgba(255, 255, 255, 0.08);
+  --muted-foreground: #a8b3bf;
+  --accent: rgba(0, 129, 255, 0.16);
+  --accent-foreground: #9ad4ff;
+  --destructive: #e23c3c;
   --border: rgba(255, 255, 255, 0.12);
-  --input: rgba(255, 255, 255, 0.12);
-  --ring: #ffffff;
-
-  --chart-1: #fafafa;
-  --chart-2: #a3a3a3;
-  --chart-3: #737373;
-  --chart-4: #525252;
-  --chart-5: #404040;
-
-  --radius: 12px;
-}
-
-.dark {
-  --resume-accent: #ffffff;
-
-  --cal-brand: #ffffff;
-  --cal-brand-emphasis: #a3a3a3;
-  --cal-brand-glow: rgba(255, 255, 255, 0.12);
-
-  --background: #171717;
-  --foreground: #fafafa;
-  --card: #171717;
-  --card-foreground: #fafafa;
-  --popover: #171717;
-  --popover-foreground: #fafafa;
-  --primary: #ffffff;
-  --primary-foreground: #000000;
-  --secondary: #262626;
-  --secondary-foreground: #d4d4d4;
-  --muted: #171717;
-  --muted-foreground: #a3a3a3;
-  --accent: #262626;
-  --accent-foreground: #fafafa;
-  --destructive: #fca5a5;
-  --border: rgba(255, 255, 255, 0.12);
-  --input: rgba(255, 255, 255, 0.12);
-  --ring: #ffffff;
+  --input: rgba(255, 255, 255, 0.14);
+  --ring: #0081ff;
+  --chart-1: #0081ff;
+  --chart-2: #2ca7f8;
+  --chart-3: #5bb8ff;
+  --chart-4: #7ec8ff;
+  --chart-5: #e6e8eb;
+  --sidebar: #252525;
+  --sidebar-foreground: #e6e8eb;
+  --sidebar-primary: #0081ff;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #2a3a4d;
+  --sidebar-accent-foreground: #7ec8ff;
+  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar-ring: #0081ff;
 }
 
 @layer base {
-  /* Avoid universal border-color → stray 1px seams on dark UI (Tailwind/shadcn * + preflight). */
-  hr {
-    border: 0 !important;
-    margin: 0 !important;
-    height: 0 !important;
-    overflow: hidden;
+  * {
+    @apply border-border outline-ring/50;
   }
-
-  [data-sonner-toaster] {
-    border: none !important;
-    box-shadow: none !important;
-    background: transparent !important;
-  }
-
-  html {
-    @apply font-sans antialiased;
-    font-feature-settings: "kern" 1;
-    font-optical-sizing: auto;
-    scroll-behavior: smooth;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-  }
-  html::-webkit-scrollbar {
-    display: none;
-    width: 0;
-    height: 0;
-  }
-
+  html,
   body {
-    @apply bg-background text-foreground;
-    font-weight: 400;
-    letter-spacing: -0.01px;
-    line-height: 1.45;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
+    @apply text-foreground antialiased;
+    background-color: #0b1220;
+    height: 100dvh;
+    overflow: hidden;
+    overscroll-behavior: none;
   }
-  body::-webkit-scrollbar {
-    display: none;
-    width: 0;
-    height: 0;
-  }
-
-  .font-heading {
-    font-family: var(--font-heading), var(--font-sans);
-    font-weight: 500;
-    font-optical-sizing: auto;
+  body {
+    background-image:
+      radial-gradient(900px 520px at 12% 8%, rgba(0, 129, 255, 0.45), transparent 58%),
+      radial-gradient(780px 480px at 88% 92%, rgba(124, 77, 255, 0.32), transparent 55%),
+      radial-gradient(520px 320px at 72% 18%, rgba(255, 255, 255, 0.14), transparent 50%);
+    background-attachment: fixed;
   }
 
-  /* Links only — buttons use component focus styles (avoid duplicate rings + Safari hairlines). */
-  a:focus-visible {
-    outline: 2px solid var(--ring);
-    outline-offset: 2px;
-  }
-
-  /* iOS Safari keeps :focus after tap; kill stray outline/shadow (not keyboard focus-visible). */
-  button:focus:not(:focus-visible) {
-    outline: none !important;
-    box-shadow: none !important;
+  *::-webkit-scrollbar-button,
+  *::-webkit-scrollbar-button:single-button,
+  *::-webkit-scrollbar-button:start,
+  *::-webkit-scrollbar-button:end,
+  *::-webkit-scrollbar-button:vertical:start:decrement,
+  *::-webkit-scrollbar-button:vertical:end:increment {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
   }
 }
 
-@layer utilities {
-  /** Top flow progress bar — Cal.com neutral emphasis gradient. */
-  .flow-progress-gradient {
-    background: linear-gradient(
-      90deg,
-      #737373 0%,
-      #a3a3a3 45%,
-      #ffffff 100%
-    );
-  }
+.glass {
+  background: rgba(255, 255, 255, var(--glass-opacity, 0.1));
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border: 0;
+  box-shadow: none;
+  border-radius: var(--app-radius, 16px);
+}
 
-  .ring-framer {
-    box-shadow: inset 0 0 0 1px var(--cal-brand-glow);
-  }
+.glass-soft {
+  background: rgba(255, 255, 255, var(--glass-opacity, 0.12));
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  border: 0;
+  border-radius: var(--app-radius, 16px);
+}
 
-  .shadow-framer-float {
-    box-shadow: none;
-  }
+.menu-panel {
+  background: #141b26;
+  border-radius: 12px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+}
 
-  .form-footer-flat {
-    position: relative;
-    background-color: var(--background);
-  }
+.glass-bubble {
+  border-radius: 18px !important;
+  overflow: hidden;
+}
 
-  .form-footer-flat::after {
-    content: "";
-    position: absolute;
-    top: 100%;
-    left: -2rem;
-    right: -2rem;
-    height: 4rem;
-    background-color: var(--background);
-    pointer-events: none;
-  }
+.glass-user {
+  background: color-mix(in srgb, var(--primary) 28%, transparent);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+}
 
-  .form-footer-flat > * {
-    position: relative;
-    z-index: 1;
-  }
+.scroll-area {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
+}
 
-  .text-display {
-    font-family: var(--font-heading), var(--font-sans);
-    font-size: clamp(2.5rem, 6vw, 5.375rem);
-    font-weight: 500;
-    line-height: 0.95;
-    letter-spacing: -0.08em;
-  }
+.scroll-area::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
 
-  .text-section-heading {
-    font-family: var(--font-heading), var(--font-sans);
-    font-size: clamp(2rem, 4vw, 3.75rem);
-    font-weight: 500;
-    line-height: 1;
-    letter-spacing: -0.06em;
-  }
+.scroll-area::-webkit-scrollbar-button,
+.scroll-area::-webkit-scrollbar-button:start,
+.scroll-area::-webkit-scrollbar-button:end,
+.scroll-area::-webkit-scrollbar-button:single-button,
+.scroll-area::-webkit-scrollbar-button:vertical:start:decrement,
+.scroll-area::-webkit-scrollbar-button:vertical:end:increment,
+.scroll-area::-webkit-scrollbar-button:horizontal:start:decrement,
+.scroll-area::-webkit-scrollbar-button:horizontal:end:increment {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
+}
 
-  .text-mono-label {
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    font-weight: 400;
-    line-height: 1;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--muted-foreground);
-  }
+.scroll-area::-webkit-scrollbar-track {
+  margin-block: 0;
+  background: transparent;
+}
 
-  .pill-button {
-    border-radius: 100px;
-    padding: 10px 15px;
-  }
+.scroll-area::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  background-clip: padding-box;
+}
 
-  .frosted-pill-surface {
-    background-color: rgba(255, 255, 255, 0.1);
-  }
+.scroll-area:hover::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.32);
+  background-clip: padding-box;
+}
 
-  .custom-scrollbar,
-  .scrollbar-none {
-    -ms-overflow-style: none !important;
-    scrollbar-width: none !important;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
-  }
-  .custom-scrollbar::-webkit-scrollbar,
-  .scrollbar-none::-webkit-scrollbar {
-    width: 0 !important;
-    height: 0 !important;
-    background: transparent !important;
-    display: none !important;
-  }
+.scroll-area::-webkit-scrollbar-thumb:hover {
+  background: #0081ff;
+  background-clip: padding-box;
+}
+
+.scroll-area::-webkit-scrollbar-thumb:active {
+  background: #2b8cff;
+  background-clip: padding-box;
+}
+
+.scroll-area-left {
+  direction: rtl;
+}
+
+.scroll-area-left > * {
+  direction: ltr;
 }

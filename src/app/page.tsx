@@ -1,195 +1,113 @@
 "use client";
 
+import type { CSSProperties } from "react";
+import { useState } from "react";
+import { RotateCcw } from "lucide-react";
 import { useResumeStore } from "@/store/useResumeStore";
-import { PersonalInfoForm } from "@/components/builder/forms/PersonalInfoForm";
-import { ProfessionalSummaryForm } from "@/components/builder/forms/SummaryForm";
-import { WorkExperienceForm } from "@/components/builder/forms/WorkExperienceForm";
-import { EducationForm } from "@/components/builder/forms/EducationForm";
-import { SkillsAndExtrasForm } from "@/components/builder/forms/SkillsAndExtrasForm";
-import { ReviewAndFinalize } from "@/components/builder/forms/ReviewAndFinalize";
-import { LivePreview } from "@/components/builder/preview/LivePreview";
-import { useEffect, useRef, useState } from "react";
-import { Eye, X } from "@phosphor-icons/react";
-import Link from "next/link";
-import { PaginatedTemplate } from "@/components/builder/templates/PaginatedTemplate";
-import { cn } from "@/lib/utils";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { useTokenStore } from "@/store/useTokenStore";
+import { PdfPreview } from "@/components/preview/PdfPreview";
+import { ChatPanel } from "@/components/chat/ChatPanel";
+import { PhotoPicker } from "@/components/builder/PhotoPicker";
+import { VersionControls } from "@/components/builder/VersionControls";
+import { ResumeSwitcher } from "@/components/builder/ResumeSwitcher";
+import { PreviewTabs } from "@/components/builder/PreviewTabs";
+import { ExportMenu } from "@/components/preview/ExportMenu";
+import { Button } from "@/components/ui/button";
 import { analyticsEvents } from "@/lib/analytics";
+import { cn } from "@/lib/utils";
 
-const TOTAL_FLOW_STEPS = 6;
-
-export default function BuilderPage() {
-  const currentStep = useResumeStore((state) => state.currentStep);
-  const template = useResumeStore((state) => state.template);
+export default function HomePage() {
   const resetStore = useResumeStore((state) => state.resetStore);
+  const ui = useResumeStore((state) => state.ui);
+  const totalTokens = useTokenStore((state) => state.totalTokens);
+  const [mobilePane, setMobilePane] = useState<"preview" | "chat">("chat");
 
   const handleReset = () => {
-    if (
-      typeof window !== "undefined" &&
-      window.confirm(
-        "Clear all resume data and start over from step 1? This cannot be undone.",
-      )
-    ) {
+    if (window.confirm("Clear the resume and chat?")) {
       analyticsEvents.resetResume();
       resetStore();
     }
   };
-  const [mobilePreviewOpen, setMobilePreviewOpen] = useState(false);
-  const formScrollRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    formScrollRef.current?.scrollTo({ top: 0, behavior: "smooth" });
-  }, [currentStep]);
-
-  const renderFormStep = () => {
-    switch (currentStep) {
-      case 1:
-        return <PersonalInfoForm />;
-      case 2:
-        return <ProfessionalSummaryForm />;
-      case 3:
-        return <WorkExperienceForm />;
-      case 4:
-        return <EducationForm />;
-      case 5:
-        return <SkillsAndExtrasForm />;
-      case 6:
-        return <ReviewAndFinalize />;
-      default:
-        return <PersonalInfoForm />;
-    }
-  };
-
-  const flowProgressPercent = Math.min(
-    100,
-    Math.max(0, (currentStep / TOTAL_FLOW_STEPS) * 100),
-  );
+  const chatWidth = ui.chatWidthPercent;
+  const resumeWidth = 100 - chatWidth;
 
   return (
-    <div className="flex min-h-[100dvh] min-h-screen flex-col bg-background text-foreground transition-colors duration-300">
-      <header className="sticky top-0 z-50 w-full border-b border-white/[0.08] bg-background/95 backdrop-blur-xl supports-[backdrop-filter]:bg-background/80">
-        <div className="mx-auto flex w-full max-w-[min(1320px,calc(100vw-2rem))] flex-nowrap items-center gap-3 px-4 py-3 sm:gap-4 sm:px-6 md:h-16 md:py-0">
-          <span className="font-heading min-w-0 flex-1 truncate text-lg font-medium tracking-[-0.06em] text-white sm:text-xl">
-            My Simple Resume
-          </span>
-          <div className="flex shrink-0 items-center gap-1 sm:gap-2">
-            <Link
-              href="/templates"
-              className={cn(
-                buttonVariants({ variant: "ghost", size: "sm" }),
-                "text-[15px] tracking-[-0.02em] text-white",
-              )}
+    <div
+      className="app-shell flex h-dvh max-h-dvh flex-col gap-2 overflow-hidden p-[max(0.5rem,env(safe-area-inset-top))_max(0.5rem,env(safe-area-inset-right))_max(0.5rem,env(safe-area-inset-bottom))_max(0.5rem,env(safe-area-inset-left))] sm:gap-3 lg:gap-4 lg:p-[max(1rem,env(safe-area-inset-top))_max(1rem,env(safe-area-inset-right))_max(1rem,env(safe-area-inset-bottom))_max(1rem,env(safe-area-inset-left))]"
+      style={
+        {
+          "--primary": ui.accent,
+          "--ring": ui.accent,
+          "--glass-opacity": String(ui.glassOpacity),
+          "--app-radius": `${ui.radiusPx}px`,
+          "--resume-fr": `${resumeWidth}fr`,
+          "--chat-fr": `${chatWidth}fr`,
+        } as CSSProperties
+      }
+    >
+      <header className="relative z-40 flex shrink-0 flex-col gap-2 lg:grid lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:items-center lg:gap-3">
+        <div className="flex min-w-0 items-center justify-between gap-2 lg:contents">
+          <div className="flex min-w-0 items-center gap-2">
+            <div className="glass hidden px-4 py-2.5 text-sm font-semibold tracking-tight xl:block">
+              My Simple Resume
+            </div>
+            <div className="glass min-w-0 px-1.5 py-1 sm:px-2 sm:py-1.5">
+              <ResumeSwitcher />
+            </div>
+            <div
+              className="glass hidden px-3 py-2.5 text-xs tabular-nums text-muted-foreground md:block"
+              title="Tokens used on this device only"
             >
-              <span>Templates</span>
-            </Link>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="text-[15px] tracking-[-0.02em] text-white"
-              onClick={handleReset}
-            >
-              Reset
-            </Button>
+              {totalTokens.toLocaleString()} tokens
+            </div>
           </div>
+          <div className="flex shrink-0 items-center justify-end lg:col-start-3">
+            <div className="glass flex items-center gap-0.5 px-1 py-1 sm:gap-1 sm:px-2 sm:py-1.5">
+              <VersionControls />
+              <PhotoPicker />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                aria-label="Reset"
+                onClick={handleReset}
+              >
+                <RotateCcw />
+                <span className="hidden md:inline">Reset</span>
+              </Button>
+              <ExportMenu />
+            </div>
+          </div>
+        </div>
+        <div className="min-w-0 lg:col-start-2 lg:row-start-1">
+          <PreviewTabs
+            mobilePane={mobilePane}
+            onMobilePaneChange={setMobilePane}
+          />
         </div>
       </header>
 
-      {/* Flow progress: gradient fills left → right like a loader */}
-      <div
-        className="relative h-1 w-full shrink-0 overflow-hidden"
-        role="progressbar"
-        aria-valuenow={currentStep}
-        aria-valuemin={1}
-        aria-valuemax={TOTAL_FLOW_STEPS}
-        aria-label={`Resume builder progress, step ${currentStep} of ${TOTAL_FLOW_STEPS}`}
-      >
-        <div className="absolute inset-0 bg-white/[0.08]" aria-hidden />
-        <div
-          className="absolute inset-y-0 left-0 flow-progress-gradient transition-[width] duration-700 ease-out"
-          style={{ width: `${flowProgressPercent}%` }}
-          aria-hidden
-        />
-      </div>
-
-      <main className="scrollbar-none flex min-h-0 flex-1 flex-col overflow-hidden bg-background px-4 pt-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:px-6 lg:pb-0">
-        <div
+      <main className="grid min-h-0 flex-1 lg:grid-cols-[var(--resume-fr)_var(--chat-fr)] lg:gap-4">
+        <section
           className={cn(
-            "mx-auto grid w-full min-h-0 flex-1 max-w-[min(1320px,calc(100vw-2rem))] gap-x-10 gap-y-8 lg:items-stretch lg:justify-center",
-            currentStep === 6
-              ? "lg:grid-cols-[minmax(0,0.4fr)_minmax(0,0.6fr)]"
-              : "lg:grid-cols-[440px_minmax(816px,1fr)]",
+            "flex min-h-0 flex-col overflow-hidden",
+            mobilePane !== "preview" && "max-lg:hidden",
           )}
+          aria-label="Resume preview"
         >
-          <div
-            ref={formScrollRef}
-            className={cn(
-              "custom-scrollbar relative z-10 min-h-0 min-w-0 overflow-y-auto overflow-x-hidden bg-background transition-all duration-300 overscroll-contain",
-              currentStep === 6
-                ? "w-full"
-                : "mx-auto w-full max-w-[440px] justify-self-start lg:mx-0 lg:w-full lg:max-w-none",
-            )}
-          >
-            {renderFormStep()}
-          </div>
-
-          <div className="hidden min-h-0 min-w-0 overflow-hidden lg:block">
-            <LivePreview />
-          </div>
-        </div>
+          <PdfPreview />
+        </section>
+        <section
+          className={cn(
+            "flex min-h-0 flex-col lg:pl-3",
+            mobilePane !== "chat" && "max-lg:hidden",
+          )}
+          aria-label="Resume chat"
+        >
+          <ChatPanel />
+        </section>
       </main>
-
-      {/* Floating View Preview Button for Mobile */}
-      <div className="fixed bottom-6 right-6 z-40 lg:hidden">
-        <Button
-          type="button"
-          size="lg"
-          onClick={() => {
-            analyticsEvents.mobilePreviewOpened(currentStep);
-            setMobilePreviewOpen(true);
-          }}
-          className="gap-2 shadow-none"
-        >
-          <Eye className="size-5" />
-          <span>Preview</span>
-        </Button>
-      </div>
-
-      {/* Mobile Full-Screen Preview Overlay */}
-      {mobilePreviewOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 px-3 pb-6 pt-24 backdrop-blur-md lg:hidden"
-          onClick={() => setMobilePreviewOpen(false)}
-          role="presentation"
-        >
-          <div
-            className="flex h-full w-full flex-col overflow-hidden rounded-xl border border-white/[0.12] bg-card text-card-foreground shadow-framer-float animate-in slide-in-from-bottom-12 fade-in duration-300 ring-1 ring-cal-brand-glow"
-            onClick={(event) => event.stopPropagation()}
-            role="dialog"
-            aria-label="Live preview"
-          >
-            <div className="flex items-center justify-between border-b border-white/[0.08] p-4">
-              <h3 className="font-heading ml-2 text-lg font-medium tracking-[-0.04em]">
-                Live Preview
-              </h3>
-              <button
-                type="button"
-                onClick={() => setMobilePreviewOpen(false)}
-                className="flex size-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-muted-foreground transition-colors hover:bg-white/10 hover:text-foreground"
-              >
-                <X className="size-5" />
-              </button>
-            </div>
-            <div className="custom-scrollbar relative flex-1 overflow-y-auto overflow-x-hidden bg-background p-4">
-              <div className="flex w-full items-start justify-center">
-                <div className="origin-top scale-[0.68] transition-transform duration-300">
-                  <PaginatedTemplate templateId={template} />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

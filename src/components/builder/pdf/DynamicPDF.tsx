@@ -1,4 +1,4 @@
-import { Document, Page, Text, View, StyleSheet, Link } from "@react-pdf/renderer";
+import { Document, Page, Text, View, StyleSheet, Link, Image } from "@react-pdf/renderer";
 import { ResumeData, TemplateType } from "@/types/resume";
 import { formatMonYYYY } from "@/lib/dateFormat";
 
@@ -80,7 +80,13 @@ export function DynamicPDF({
 
   const skillsStr = skills.map((s) => s.name.trim()).filter(Boolean).join(", ");
 
-  const headerBlock =
+  const photo = personalInfo.photoUrl?.trim();
+  const photoNode =
+    photo && (photo.startsWith("data:image/") || photo.startsWith("http")) ? (
+      <Image src={photo} style={styles.photo} />
+    ) : null;
+
+  const headerInner =
     templateId === "signature" ? (
       <View style={styles.headerBand}>
         <Text style={styles.name}>{personalInfo.fullName || "Your Name"}</Text>
@@ -100,6 +106,15 @@ export function DynamicPDF({
         {contactInline}
       </View>
     );
+
+  const headerBlock = photoNode ? (
+    <View style={styles.headerRow}>
+      <View style={styles.headerText}>{headerInner}</View>
+      {photoNode}
+    </View>
+  ) : (
+    headerInner
+  );
 
   return (
     <Document>
@@ -251,6 +266,13 @@ function buildPdfStyles(templateId: TemplateType, accent: string): PdfStyle {
     bulletRow: { flexDirection: "row" as const, marginBottom: 2 },
     bullet: { width: 10, fontSize: 10 as number },
     bulletText: { flex: 1, fontSize: 10, lineHeight: 1.45, color: "#262626" },
+    headerRow: {
+      flexDirection: "row" as const,
+      justifyContent: "space-between" as const,
+      alignItems: "flex-start" as const,
+    },
+    headerText: { flexGrow: 1, flexShrink: 1, paddingRight: 12 },
+    photo: { width: 64, height: 64, borderRadius: 4, objectFit: "cover" as const },
   };
 
   if (templateId === "standard") {

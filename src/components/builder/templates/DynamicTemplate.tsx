@@ -509,19 +509,35 @@ export function DynamicTemplate({
           : "mx-auto w-full max-w-[816px] scale-[0.8] bg-white shadow-sm md:scale-100"
       )}
     >
-      <header className={tpl.header} data-resume-block>
-        <h1 className={cn(tpl.name, "wrap-break-word")}>
-          {personalInfo.fullName || "Your Name"}
-        </h1>
-        {(personalInfo.jobTitle || "").trim().length > 0 && (
-          <p className={cn(tpl.job, "wrap-break-word")}>{personalInfo.jobTitle}</p>
+      <header
+        className={cn(
+          tpl.header,
+          personalInfo.photoUrl?.trim() && "flex items-start justify-between gap-4",
         )}
-        {!isSidebar && primaryContactLine && (
-          <p className={cn(tpl.contact, "wrap-break-word")}>{primaryContactLine}</p>
-        )}
-        {!isSidebar && linksLine && (
-          <p className={cn(tpl.contact, "wrap-break-word")}>{linksLine}</p>
-        )}
+        data-resume-block
+      >
+        <div className="min-w-0 flex-1">
+          <h1 className={cn(tpl.name, "wrap-break-word")}>
+            {personalInfo.fullName || "Your Name"}
+          </h1>
+          {(personalInfo.jobTitle || "").trim().length > 0 && (
+            <p className={cn(tpl.job, "wrap-break-word")}>{personalInfo.jobTitle}</p>
+          )}
+          {!isSidebar && primaryContactLine && (
+            <p className={cn(tpl.contact, "wrap-break-word")}>{primaryContactLine}</p>
+          )}
+          {!isSidebar && linksLine && (
+            <p className={cn(tpl.contact, "wrap-break-word")}>{linksLine}</p>
+          )}
+        </div>
+        {personalInfo.photoUrl?.trim() ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={personalInfo.photoUrl}
+            alt=""
+            className="size-[72px] shrink-0 rounded object-cover"
+          />
+        ) : null}
       </header>
 
       {isSidebar ? (

@@ -10,7 +10,7 @@ import {
 import { DynamicTemplate } from "./DynamicTemplate";
 
 const PAGE_H = 1056;
-const PAGE_GAP = 28;
+const PAGE_GAP = 16;
 const PAGE_PAD_TOP = 56;
 const PAGE_PAD_BOTTOM = 56;
 
@@ -18,6 +18,24 @@ type Props = Omit<
   ComponentProps<typeof DynamicTemplate>,
   "showPageBreaks" | "paginated"
 >;
+
+function sectionTitleFor(block: HTMLElement) {
+  const parent = block.parentElement;
+  const isFirstInGroup =
+    parent?.hasAttribute("data-resume-entries") &&
+    parent.firstElementChild === block;
+  if (!isFirstInGroup) return null;
+  const previous = parent?.previousElementSibling as HTMLElement | null;
+  if (previous?.hasAttribute("data-resume-section-title")) return previous;
+  return null;
+}
+
+function inPageGap(y: number, pageIndex: number) {
+  const pageStart = pageIndex * (PAGE_H + PAGE_GAP);
+  const pageEnd = pageStart + PAGE_H;
+  const nextPageStart = pageStart + PAGE_H + PAGE_GAP;
+  return y >= pageEnd - 8 && y < nextPageStart + PAGE_PAD_TOP;
+}
 
 export function PaginatedTemplate(props: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -34,50 +52,63 @@ export function PaginatedTemplate(props: Props) {
     const titles = Array.from(
       root.querySelectorAll<HTMLElement>("[data-resume-section-title]"),
     );
+    const sections = titles
+      .map((title) => title.parentElement)
+      .filter((el): el is HTMLElement => Boolean(el));
 
-    [...blocks, ...titles].forEach((el) => {
+    [...blocks, ...titles, ...sections].forEach((el) => {
       el.style.marginTop = "";
+      el.style.paddingTop = "";
     });
 
     const pageStep = PAGE_H + PAGE_GAP;
     let pageIndex = 0;
 
+    const pushToPage = (
+      page: number,
+      title: HTMLElement | null,
+      block: HTMLElement,
+    ) => {
+      const nextStart = page * pageStep + PAGE_PAD_TOP;
+      const anchor = title ?? block;
+      const delta = nextStart - anchor.offsetTop;
+      if (delta <= 0) return;
+
+      const section =
+        title?.parentElement ??
+        (block.tagName === "SECTION" ? block : null);
+
+      if (section) {
+        const current = Number.parseFloat(section.style.paddingTop) || 0;
+        section.style.paddingTop = `${current + delta}px`;
+        return;
+      }
+
+      const current =
+        Number.parseFloat(getComputedStyle(block).marginTop) || 0;
+      block.style.marginTop = `${current + delta}px`;
+    };
+
     blocks.forEach((block) => {
-      const top = block.offsetTop;
-      const bottom = top + block.offsetHeight;
+      const title = sectionTitleFor(block);
+      const anchorTop = title ? title.offsetTop : block.offsetTop;
+      const bottom = block.offsetTop + block.offsetHeight;
       const pageBottomY = pageIndex * pageStep + PAGE_H - PAGE_PAD_BOTTOM;
 
-      if (bottom <= pageBottomY) return;
+      const fitsOnPage =
+        bottom <= pageBottomY && !inPageGap(anchorTop, pageIndex);
 
-      const nextPageStartY = (pageIndex + 1) * pageStep + PAGE_PAD_TOP;
-      const delta = Math.max(0, nextPageStartY - top);
-      if (delta > 0) {
-        const parent = block.parentElement;
-        const isFirstInGroup =
-          parent?.hasAttribute("data-resume-entries") &&
-          parent.firstElementChild === block;
-        const sectionTitle = isFirstInGroup
-          ? (parent?.previousElementSibling as HTMLElement | null)
-          : null;
+      if (fitsOnPage) return;
 
-        if (
-          sectionTitle &&
-          sectionTitle.hasAttribute("data-resume-section-title")
-        ) {
-          sectionTitle.style.marginTop = `${delta}px`;
-        } else {
-          block.style.marginTop = `${delta}px`;
-        }
-      }
       pageIndex += 1;
+      pushToPage(pageIndex, title, block);
     });
 
-    let pages = pageIndex + 1;
-
+    let pages = Math.max(1, pageIndex + 1);
     const last = blocks[blocks.length - 1];
     if (last) {
       const lastBottom = last.offsetTop + last.offsetHeight + PAGE_PAD_BOTTOM;
-      while (lastBottom > pages * PAGE_H + (pages - 1) * PAGE_GAP) {
+      while (lastBottom > pages * pageStep - PAGE_GAP) {
         pages += 1;
       }
     }
@@ -130,10 +161,11 @@ export function PaginatedTemplate(props: Props) {
         {Array.from({ length: pageCount }).map((_, i) => (
           <div
             key={i}
-            className="absolute left-0 right-0 rounded-sm border border-border bg-white shadow-none"
+            className="absolute left-0 right-0 bg-white shadow-[0_10px_28px_rgba(0,0,0,0.4)]"
             style={{
               top: i * (PAGE_H + PAGE_GAP),
               height: PAGE_H,
+              borderRadius: 8,
             }}
             aria-hidden
           />
