@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Heart, X } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -70,11 +71,8 @@ export function DonatePrompt() {
 
   if (!open) return null;
 
-  return (
-    <div
-      className="fixed inset-0 z-[80] flex items-center justify-center bg-black/70 p-4"
-      onClick={dismiss}
-    >
+  return createPortal(
+    <div className="screen-dim" onClick={dismiss}>
       <div
         role="dialog"
         aria-modal="true"
@@ -115,6 +113,7 @@ export function DonatePrompt() {
           </a>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

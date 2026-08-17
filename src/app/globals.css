@@ -120,18 +120,81 @@
   border-radius: var(--app-radius, 16px);
 }
 
-.glass-soft {
-  background: rgba(255, 255, 255, var(--glass-opacity, 0.12));
-  backdrop-filter: blur(18px) saturate(160%);
-  -webkit-backdrop-filter: blur(18px) saturate(160%);
-  border: 0;
-  border-radius: var(--app-radius, 16px);
-}
-
 .menu-panel {
   background: #141b26;
   border-radius: 12px;
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+}
+
+.glass-track {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.glass-group {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.glass-group-row + .glass-group-row {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.screen-dim {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 9999 !important;
+  display: flex;
+  width: 100vw;
+  height: 100dvh;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  margin: 0;
+  background: rgba(0, 0, 0, 0.78);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+}
+
+#overlay-root {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483646;
+  pointer-events: none;
+}
+
+#overlay-root:empty {
+  display: none;
+}
+
+#overlay-root > * {
+  pointer-events: auto;
+}
+
+.glass-screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  margin: 0;
+  background: rgba(8, 12, 20, 0.62);
+}
+
+.glass-screen .glass-track,
+.glass-screen .glass-group {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+body.api-open .app-shell {
+  filter: blur(16px);
+  pointer-events: none;
 }
 
 .glass-bubble {

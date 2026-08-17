@@ -51,21 +51,21 @@ export default function HomePage() {
       <header className="relative z-40 flex shrink-0 flex-col gap-2 lg:grid lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:items-center lg:gap-3">
         <div className="flex min-w-0 items-center justify-between gap-2 lg:contents">
           <div className="flex min-w-0 items-center gap-2">
-            <div className="glass hidden px-4 py-2.5 text-sm font-semibold tracking-tight xl:block">
+            <div className="hidden px-2 py-2.5 text-sm font-semibold tracking-tight xl:block">
               My Simple Resume
             </div>
-            <div className="glass min-w-0 px-1.5 py-1 sm:px-2 sm:py-1.5">
+            <div className="min-w-0">
               <ResumeSwitcher />
             </div>
             <div
-              className="glass hidden px-3 py-2.5 text-xs tabular-nums text-muted-foreground md:block"
+              className="hidden px-2 py-2.5 text-xs tabular-nums text-muted-foreground md:block"
               title="Tokens used on this device only"
             >
               {totalTokens.toLocaleString()} tokens
             </div>
           </div>
           <div className="flex shrink-0 items-center justify-end lg:col-start-3">
-            <div className="glass flex items-center gap-0.5 px-1 py-1 sm:gap-1 sm:px-2 sm:py-1.5">
+            <div className="flex items-center gap-0.5 sm:gap-1">
               <VersionControls />
               <PhotoPicker />
               <Button

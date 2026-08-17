@@ -1,6 +1,7 @@
 "use client";
 
 import { ChangeEvent, FormEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { ArrowUp, Loader2, Paperclip, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -21,9 +22,28 @@ const STARTERS = [
 
 const ACCEPT = ".pdf,.docx,.txt,.md";
 const MAX_BYTES = 4 * 1024 * 1024;
+const SETUP_PATH = "/setup";
 
 function newId() {
   return crypto.randomUUID();
+}
+
+function ChatText({ content }: { content: string }) {
+  if (!content.includes(SETUP_PATH)) {
+    return <>{content}</>;
+  }
+  const text = content.replace(SETUP_PATH, "").trim();
+  return (
+    <>
+      <span className="whitespace-pre-wrap">{text}</span>
+      <Link
+        href={SETUP_PATH}
+        className="mt-3 inline-flex h-8 items-center rounded-full bg-primary px-4 text-[13px] font-medium text-primary-foreground"
+      >
+        Add a free key — it&apos;s easy
+      </Link>
+    </>
+  );
 }
 
 export function ChatPanel() {
@@ -54,15 +74,17 @@ export function ChatPanel() {
   const [file, setFile] = useState<File | null>(null);
   const [sending, setSending] = useState(false);
   const [configured, setConfigured] = useState<boolean | null>(null);
+  const [poolExhausted, setPoolExhausted] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetch("/api/chat")
       .then((res) => res.json())
-      .then((json: { configured?: boolean }) =>
-        setConfigured(Boolean(json.configured)),
-      )
+      .then((json: { configured?: boolean; pool?: { exhausted?: boolean } }) => {
+        setConfigured(Boolean(json.configured));
+        setPoolExhausted(Boolean(json.pool?.exhausted));
+      })
       .catch(() => setConfigured(false));
   }, []);
 
@@ -144,6 +166,8 @@ export function ChatPanel() {
         coverLetter?: string;
         usage?: unknown;
         error?: string;
+        code?: string;
+        setupPath?: string;
       };
       try {
         json = JSON.parse(raw) as typeof json;
@@ -154,6 +178,17 @@ export function ChatPanel() {
       }
 
       if (!response.ok) {
+        if (json.code === "pool_exhausted" || json.code === "need_key") {
+          setPoolExhausted(json.code === "pool_exhausted");
+          addMessage({
+            id: newId(),
+            role: "assistant",
+            content:
+              json.error ||
+              `Add a free key to keep chatting.\n\n${json.setupPath || SETUP_PATH}`,
+          });
+          return;
+        }
         throw new Error(json.error || "Chat failed");
       }
 
@@ -211,9 +246,27 @@ export function ChatPanel() {
               letter. The preview updates as you chat.
             </p>
             {configured === false && !llm && (
-              <p className="glass px-4 py-3 text-sm text-destructive">
-                Add your own API key with the API button, or set GROQ_API_KEY on
-                the server.
+              <p className="glass px-4 py-3 text-sm text-muted-foreground">
+                Chat needs a free key first. You don&apos;t need to know how to
+                code.{" "}
+                <Link
+                  href={SETUP_PATH}
+                  className="font-medium text-primary underline-offset-4 hover:underline"
+                >
+                  Add a free key — it&apos;s easy
+                </Link>
+              </p>
+            )}
+            {configured && poolExhausted && !llm && (
+              <p className="glass px-4 py-3 text-sm text-muted-foreground">
+                Today&apos;s free chats are used up (shared by everyone). You
+                can keep going with your own free key.{" "}
+                <Link
+                  href={SETUP_PATH}
+                  className="font-medium text-primary underline-offset-4 hover:underline"
+                >
+                  Add a free key — it&apos;s easy
+                </Link>
               </p>
             )}
             <div className="flex flex-col gap-2">
@@ -237,10 +290,10 @@ export function ChatPanel() {
               <div
                 key={message.id}
                 className={cn(
-                  "glass-bubble max-w-[92%] px-3.5 py-2 text-sm whitespace-pre-wrap sm:max-w-[85%]",
+                  "glass-bubble max-w-[92%] px-3.5 py-2 text-sm sm:max-w-[85%]",
                   message.role === "user"
-                    ? "glass-user ml-auto text-white"
-                    : "glass text-foreground",
+                    ? "glass-user ml-auto whitespace-pre-wrap text-white"
+                    : "glass flex flex-col items-start text-foreground",
                 )}
               >
                 {message.attachmentName && (
@@ -249,7 +302,11 @@ export function ChatPanel() {
                     {message.attachmentName}
                   </div>
                 )}
-                {message.content}
+                {message.role === "assistant" ? (
+                  <ChatText content={message.content} />
+                ) : (
+                  message.content
+                )}
               </div>
             ))}
             {sending && (

@@ -21,6 +21,7 @@
 
 # debug
 npm-debug.log*
+build.log
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
@@ -28,6 +29,9 @@ yarn-error.log*
 # local env files
 .env
 .env*.local
+
+# shared free-chat pool
+.data/
 
 # vercel
 .vercel

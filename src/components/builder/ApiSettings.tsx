@@ -1,16 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { KeyRound, X } from "lucide-react";
+import { createPortal } from "react-dom";
+import { Eye, EyeOff, KeyRound, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { LLM_PRESETS, LlmProvider } from "@/lib/userLlm";
 import { useUserLlmStore } from "@/store/useUserLlmStore";
+import { cn } from "@/lib/utils";
 
-const fieldClass =
-  "h-9 w-full rounded-lg bg-white/8 px-3 text-sm outline-none placeholder:text-muted-foreground";
-
-const PROVIDER_OPTIONS: Array<{ id: LlmProvider; label: string }> = [
+const PROVIDERS: Array<{ id: LlmProvider; label: string }> = [
   { id: "groq", label: "Groq" },
   { id: "openai", label: "OpenAI" },
   { id: "openrouter", label: "OpenRouter" },
@@ -20,6 +19,8 @@ const PROVIDER_OPTIONS: Array<{ id: LlmProvider; label: string }> = [
 export function ApiSettings() {
   const stored = useUserLlmStore();
   const [open, setOpen] = useState(false);
+  const [overlayRoot, setOverlayRoot] = useState<HTMLElement | null>(null);
+  const [showKey, setShowKey] = useState(false);
   const [provider, setProvider] = useState<LlmProvider>(stored.provider);
   const [apiKey, setApiKey] = useState(stored.apiKey);
   const [model, setModel] = useState(stored.model);
@@ -30,16 +31,25 @@ export function ApiSettings() {
     setApiKey(stored.apiKey);
     setModel(stored.model);
     setBaseUrl(stored.baseUrl);
+    setShowKey(false);
     setOpen(true);
   };
+
+  useEffect(() => {
+    setOverlayRoot(document.getElementById("overlay-root"));
+  }, []);
 
   useEffect(() => {
     if (!open) return;
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") setOpen(false);
     };
+    document.body.classList.add("api-open");
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    return () => {
+      document.body.classList.remove("api-open");
+      window.removeEventListener("keydown", onKey);
+    };
   }, [open]);
 
   const onProvider = (next: LlmProvider) => {
@@ -57,11 +67,7 @@ export function ApiSettings() {
       baseUrl: baseUrl.trim().replace(/\/+$/, ""),
     });
     setOpen(false);
-    toast.success(
-      apiKey.trim()
-        ? "Saved. Chat will use your API on this device."
-        : "Cleared. Chat will use the app default if it has one.",
-    );
+    toast.success(apiKey.trim() ? "Saved on this device." : "Using the app default.");
   };
 
   const onClear = () => {
@@ -70,7 +76,8 @@ export function ApiSettings() {
     setApiKey("");
     setModel(LLM_PRESETS.groq.model);
     setBaseUrl(LLM_PRESETS.groq.baseUrl);
-    toast.success("Removed your API key from this device.");
+    setOpen(false);
+    toast.success("Using the app default.");
   };
 
   return (
@@ -85,99 +92,128 @@ export function ApiSettings() {
         <KeyRound />
         <span className="hidden md:inline">API</span>
       </Button>
-      {open ? (
-        <div
-          className="fixed inset-0 z-[80] flex items-center justify-center bg-black/70 p-4"
-          onClick={() => setOpen(false)}
-        >
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="api-settings-title"
-            className="menu-panel w-full max-w-md rounded-2xl p-5"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <div className="flex items-start justify-between gap-3">
-              <p id="api-settings-title" className="text-sm font-semibold">
-                Your API
-              </p>
-              <button
-                type="button"
-                className="rounded-md p-1 text-muted-foreground hover:bg-white/10 hover:text-foreground"
-                aria-label="Close"
-                onClick={() => setOpen(false)}
-              >
-                <X className="size-4" />
-              </button>
-            </div>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Optional. The key stays on this device and is sent only to call
-              your provider. OpenAI-compatible APIs work, including local ones
-              on localhost.
-            </p>
-            <div className="mt-4 space-y-3">
-              <label className="block space-y-1.5">
-                <span className="text-xs text-muted-foreground">Provider</span>
-                <select
-                  value={provider}
-                  className={fieldClass}
-                  onChange={(event) => onProvider(event.target.value as LlmProvider)}
-                >
-                  {PROVIDER_OPTIONS.map((option) => (
-                    <option key={option.id} value={option.id} className="bg-neutral-900">
+      {open && overlayRoot
+        ? createPortal(
+            <div
+              className="glass-screen"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="api-settings-title"
+            >
+              <div className="relative w-full max-w-[420px]">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p
+                      id="api-settings-title"
+                      className="text-[17px] font-semibold tracking-tight text-white"
+                    >
+                      API
+                    </p>
+                    <p className="mt-1 text-[12px] text-white/50">
+                      Stored on this device only
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    className="rounded-full bg-white/8 p-1.5 text-white/55 hover:bg-white/14 hover:text-white"
+                    aria-label="Close"
+                    onClick={() => setOpen(false)}
+                  >
+                    <X className="size-4" />
+                  </button>
+                </div>
+
+                <div className="glass-track mt-8 flex rounded-full p-1">
+                  {PROVIDERS.map((option) => (
+                    <button
+                      key={option.id}
+                      type="button"
+                      className={cn(
+                        "min-w-0 flex-1 rounded-full px-2 py-1.5 text-[11px] font-medium transition-colors",
+                        provider === option.id
+                          ? "bg-white/20 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]"
+                          : "text-white/45 hover:text-white/80",
+                      )}
+                      onClick={() => onProvider(option.id)}
+                    >
                       {option.label}
-                    </option>
+                    </button>
                   ))}
-                </select>
-              </label>
-              <label className="block space-y-1.5">
-                <span className="text-xs text-muted-foreground">API key</span>
-                <input
-                  type="password"
-                  autoComplete="off"
-                  spellCheck={false}
-                  value={apiKey}
-                  onChange={(event) => setApiKey(event.target.value)}
-                  placeholder="sk-… or gsk_…"
-                  className={fieldClass}
-                />
-              </label>
-              <label className="block space-y-1.5">
-                <span className="text-xs text-muted-foreground">Model</span>
-                <input
-                  value={model}
-                  onChange={(event) => setModel(event.target.value)}
-                  placeholder="gpt-4o-mini"
-                  className={fieldClass}
-                />
-              </label>
-              <label className="block space-y-1.5">
-                <span className="text-xs text-muted-foreground">Base URL</span>
-                <input
-                  value={baseUrl}
-                  onChange={(event) => setBaseUrl(event.target.value)}
-                  disabled={provider !== "custom"}
-                  placeholder="https://api.openai.com/v1"
-                  className={`${fieldClass} disabled:opacity-50`}
-                />
-              </label>
-            </div>
-            <div className="mt-4 flex items-center justify-between gap-2">
-              <Button type="button" variant="ghost" size="sm" onClick={onClear}>
-                Remove
-              </Button>
-              <div className="flex gap-2">
-                <Button type="button" variant="ghost" size="sm" onClick={() => setOpen(false)}>
-                  Cancel
-                </Button>
-                <Button type="button" size="sm" onClick={onSave}>
-                  Save
-                </Button>
+                </div>
+
+                <div className="glass-group mt-5 overflow-hidden rounded-2xl">
+                  <label className="glass-group-row grid grid-cols-[52px_minmax(0,1fr)] items-center gap-2 px-3.5 py-2.5">
+                    <span className="text-[12px] text-white/45">Key</span>
+                    <div className="relative min-w-0">
+                      <input
+                        type={showKey ? "text" : "password"}
+                        autoComplete="off"
+                        spellCheck={false}
+                        value={apiKey}
+                        onChange={(event) => setApiKey(event.target.value)}
+                        placeholder="paste key"
+                        className="h-8 w-full bg-transparent pr-8 text-[13px] text-white outline-none placeholder:text-white/30"
+                      />
+                      <button
+                        type="button"
+                        className="absolute right-0 top-1/2 -translate-y-1/2 text-white/35 hover:text-white/80"
+                        aria-label={showKey ? "Hide key" : "Show key"}
+                        onClick={() => setShowKey((value) => !value)}
+                      >
+                        {showKey ? (
+                          <EyeOff className="size-3.5" />
+                        ) : (
+                          <Eye className="size-3.5" />
+                        )}
+                      </button>
+                    </div>
+                  </label>
+                  <label className="glass-group-row grid grid-cols-[52px_minmax(0,1fr)] items-center gap-2 px-3.5 py-2.5">
+                    <span className="text-[12px] text-white/45">Model</span>
+                    <input
+                      value={model}
+                      onChange={(event) => setModel(event.target.value)}
+                      placeholder="model id"
+                      className="h-8 w-full bg-transparent text-[13px] text-white outline-none placeholder:text-white/30"
+                    />
+                  </label>
+                  {provider === "custom" ? (
+                    <label className="glass-group-row grid grid-cols-[52px_minmax(0,1fr)] items-center gap-2 px-3.5 py-2.5">
+                      <span className="text-[12px] text-white/45">URL</span>
+                      <input
+                        value={baseUrl}
+                        onChange={(event) => setBaseUrl(event.target.value)}
+                        placeholder="https://host/v1"
+                        className="h-8 w-full bg-transparent text-[13px] text-white outline-none placeholder:text-white/30"
+                      />
+                    </label>
+                  ) : null}
+                </div>
+
+                <div className="mt-6 flex items-center">
+                  {stored.apiKey.trim() ? (
+                    <button
+                      type="button"
+                      className="text-[12px] text-white/40 hover:text-white"
+                      onClick={onClear}
+                    >
+                      Use app default
+                    </button>
+                  ) : null}
+                  <Button
+                    type="button"
+                    size="sm"
+                    className="ml-auto h-8 rounded-full px-5 shadow-[0_8px_24px_color-mix(in_srgb,var(--primary)_40%,transparent)]"
+                    onClick={onSave}
+                  >
+                    Save
+                  </Button>
+                </div>
               </div>
-            </div>
-          </div>
-        </div>
-      ) : null}
+            </div>,
+            overlayRoot,
+          )
+        : null}
     </>
   );
 }

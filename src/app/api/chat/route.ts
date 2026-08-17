@@ -9,6 +9,13 @@ import { isResumeEmpty, normalizeResume, parseTemplate } from "@/lib/normalizeRe
 import { isValidTemplateId, templateFromUserText } from "@/lib/resumeTemplates";
 import { defaultAppUi } from "@/types/ui";
 import { isAppUiRequest, mergeUi, normalizeUi, uiFromUserText } from "@/lib/normalizeUi";
+import {
+  SETUP_PATH,
+  clientIp,
+  consumeFreeChat,
+  getPoolStatus,
+  poolExhaustedMessage,
+} from "@/lib/tokenPool";
 
 export const runtime = "nodejs";
 
@@ -61,8 +68,15 @@ function providerErrorMessage(
   return message.trim() || `${provider} returned an error. Try again in a moment.`;
 }
 
-export async function GET() {
-  return NextResponse.json({ configured: Boolean(getLlmConfig()) });
+export async function GET(request: Request) {
+  const pool = await getPoolStatus(clientIp(request));
+  return NextResponse.json({
+    configured: Boolean(getLlmConfig()),
+    pool: {
+      exhausted: pool.exhausted,
+      setupPath: SETUP_PATH,
+    },
+  });
 }
 
 export async function POST(request: Request) {
@@ -129,10 +143,27 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         error:
-          "Add your API key with the API button, or set GROQ_API_KEY, OPENAI_API_KEY, or OPENROUTER_API_KEY on the server.",
+          "Add a free key to keep chatting. You don't need to know how to code.\n\n" +
+          SETUP_PATH,
+        code: "need_key",
+        setupPath: SETUP_PATH,
       },
       { status: 503 },
     );
+  }
+
+  if (!usingUserKey) {
+    const pool = await getPoolStatus(clientIp(request));
+    if (pool.exhausted) {
+      return NextResponse.json(
+        {
+          error: poolExhaustedMessage(),
+          code: "pool_exhausted",
+          setupPath: SETUP_PATH,
+        },
+        { status: 429 },
+      );
+    }
   }
 
   const userMessages = incoming
@@ -237,6 +268,10 @@ export async function POST(request: Request) {
       { error: providerErrorMessage(completion.status, detail, config.baseUrl, usingUserKey) },
       { status: 502 },
     );
+  }
+
+  if (!usingUserKey) {
+    await consumeFreeChat(clientIp(request));
   }
 
   const json = (await completion.json()) as {

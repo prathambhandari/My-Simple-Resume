@@ -22,7 +22,7 @@ export function PreviewTabs({
   const setPreviewMode = useResumeStore((state) => state.setPreviewMode);
 
   return (
-    <div className="glass flex w-full items-center gap-1 p-1 lg:w-auto">
+    <div className="flex w-full items-center gap-1 lg:w-auto">
       {MODES.map((mode) => {
         const desktopOn = previewMode === mode.id;
         const mobileOn = mobilePane === "preview" && previewMode === mode.id;

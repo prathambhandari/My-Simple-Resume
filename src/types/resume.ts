@@ -1,115 +1,82 @@
-import { z } from "zod";
+export type ResumeLink = {
+  id: string;
+  title: string;
+  url: string;
+};
 
-export const personalInfoSchema = z.object({
-  fullName: z.string().min(2, "Full name must be at least 2 characters"),
-  jobTitle: z.string().optional().or(z.literal("")),
-  email: z
-    .string()
-    .min(1, "Email is required")
-    .email("Enter a valid email address (e.g. you@example.com)"),
-  phone: z
-    .string()
-    .regex(
-      /^\+\d{1,4}\s\d{6,15}$/,
-      "Enter a valid phone number (6-15 digits)",
-    )
-    .optional()
-    .or(z.literal("")),
-  dateOfBirth: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, "Enter a valid date")
-    .optional()
-    .or(z.literal("")),
-  location: z.string().optional().or(z.literal("")),
-  website: z.string().url().optional().or(z.literal("")),
-  linkedin: z.string().url().optional().or(z.literal("")),
-  github: z.string().url().optional().or(z.literal("")),
-  linkDisplay: z.enum(["title", "url", "both"]).optional().default("both"),
-  links: z
-    .array(
-      z.object({
-        id: z.string(),
-        title: z.string().min(1, "Link title is required").max(40),
-        url: z.string().url("Enter a valid URL (https://...)").max(300),
-      }),
-    )
-    .optional()
-    .default([]),
-  photoUrl: z.string().optional(),
-});
+export type PersonalInfo = {
+  fullName: string;
+  jobTitle: string;
+  email: string;
+  phone: string;
+  dateOfBirth: string;
+  location: string;
+  website: string;
+  linkedin: string;
+  github: string;
+  linkDisplay: "title" | "url" | "both";
+  links: ResumeLink[];
+  photoUrl: string;
+};
 
-export const professionalSummarySchema = z.object({
-  summary: z.string().min(10, "Summary must be at least 10 characters"),
-});
+export type WorkExperience = {
+  id: string;
+  jobTitle: string;
+  company: string;
+  location: string;
+  startDate: string;
+  endDate?: string;
+  current?: boolean;
+  description: string;
+};
 
-export const workExperienceSchema = z.object({
-  id: z.string(),
-  jobTitle: z.string().min(2, "Job title is required"),
-  company: z.string().min(2, "Company is required"),
-  location: z.string().min(2, "Location is required"),
-  startDate: z.string().min(2, "Start date is required"),
-  endDate: z.string().optional(),
-  current: z.boolean().optional(),
-  description: z.string().min(10, "Description is required"),
-});
+export type Education = {
+  id: string;
+  degree: string;
+  school: string;
+  location: string;
+  startDate: string;
+  endDate?: string;
+  current?: boolean;
+  gpa?: string;
+};
 
-export const educationSchema = z.object({
-  id: z.string(),
-  degree: z.string().min(2, "Degree is required"),
-  school: z.string().min(2, "School name is required"),
-  location: z.string().min(2, "Location is required"),
-  startDate: z.string().min(2, "Start date is required"),
-  endDate: z.string().optional(),
-  current: z.boolean().optional(),
-  gpa: z.string().optional(),
-});
+export type Skill = {
+  id: string;
+  name: string;
+};
 
-export const skillSchema = z.object({
-  id: z.string(),
-  name: z.string().min(1, "Skill name is required"),
-});
+export type Project = {
+  id: string;
+  name: string;
+  description: string;
+  url?: string;
+};
 
-export const projectSchema = z.object({
-  id: z.string(),
-  name: z.string().min(2, "Project name is required"),
-  description: z.string().min(10, "Description is required"),
-  url: z.string().url().optional().or(z.literal("")),
-});
+export type CustomItem = {
+  id: string;
+  type: "paragraph" | "bullets" | "progress";
+  name: string;
+  description?: string;
+  value?: number;
+};
 
-export const customItemSchema = z.object({
-  id: z.string(),
-  type: z.enum(["paragraph", "bullets", "progress"]).default("paragraph"),
-  name: z.string().min(1, "Title/Label is required"),
-  description: z.string().optional(),
-  value: z.coerce.number().min(0).max(100).optional(),
-});
+export type CustomSection = {
+  id: string;
+  title: string;
+  items: CustomItem[];
+};
 
-export const customSectionSchema = z.object({
-  id: z.string(),
-  title: z.string().min(1, "Section title is required"),
-  items: z.array(customItemSchema),
-});
-
-export const resumeDataSchema = z.object({
-  personalInfo: personalInfoSchema,
-  summary: professionalSummarySchema.shape.summary,
-  summaryShowTitle: z.boolean().optional().default(false),
-  experience: z.array(workExperienceSchema),
-  education: z.array(educationSchema),
-  skills: z.array(skillSchema),
-  projects: z.array(projectSchema),
-  customSections: z.array(customSectionSchema).optional(),
-});
-
-export type PersonalInfo = z.infer<typeof personalInfoSchema>;
-export type ProfessionalSummary = z.infer<typeof professionalSummarySchema>;
-export type WorkExperience = z.infer<typeof workExperienceSchema>;
-export type Education = z.infer<typeof educationSchema>;
-export type Skill = z.infer<typeof skillSchema>;
-export type Project = z.infer<typeof projectSchema>;
-export type CustomItem = z.infer<typeof customItemSchema>;
-export type CustomSection = z.infer<typeof customSectionSchema>;
-export type ResumeData = z.infer<typeof resumeDataSchema>;
+export type ResumeData = {
+  personalInfo: PersonalInfo;
+  summary: string;
+  summaryShowTitle?: boolean;
+  experience: WorkExperience[];
+  education: Education[];
+  skills: Skill[];
+  projects: Project[];
+  customSections?: CustomSection[];
+};
 
 /** Resume layout variants (preview + PDF). All stay single-column with plain-text contact for ATS safety. */
 export type TemplateType =

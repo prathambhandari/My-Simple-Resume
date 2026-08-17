@@ -48,6 +48,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           {children}
+          <div id="overlay-root" />
           <Analytics />
           <SpeedInsights />
           <Toaster />
