@@ -12,6 +12,8 @@ import { VersionControls } from "@/components/builder/VersionControls";
 import { ResumeSwitcher } from "@/components/builder/ResumeSwitcher";
 import { PreviewTabs } from "@/components/builder/PreviewTabs";
 import { ExportMenu } from "@/components/preview/ExportMenu";
+import { DonateLink, DonatePrompt } from "@/components/builder/DonatePrompt";
+import { ApiSettings } from "@/components/builder/ApiSettings";
 import { Button } from "@/components/ui/button";
 import { analyticsEvents } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
@@ -76,6 +78,8 @@ export default function HomePage() {
                 <RotateCcw />
                 <span className="hidden md:inline">Reset</span>
               </Button>
+              <DonateLink />
+              <ApiSettings />
               <ExportMenu />
             </div>
           </div>
@@ -108,6 +112,7 @@ export default function HomePage() {
           <ChatPanel />
         </section>
       </main>
+      <DonatePrompt />
     </div>
   );
 }

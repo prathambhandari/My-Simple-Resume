@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useResumeStore } from "@/store/useResumeStore";
 import { isResumeEmpty } from "@/lib/normalizeResume";
 import { analyticsEvents } from "@/lib/analytics";
+import { requestDonatePrompt } from "@/lib/donate";
 
 function downloadBlob(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob);
@@ -42,11 +43,12 @@ export function ExportMenu() {
     return () => document.removeEventListener("pointerdown", onPointer);
   }, []);
 
-  const run = async (key: string, work: () => Promise<void>) => {
+  const run = async (key: string, work: () => Promise<boolean | void>) => {
     setLoading(key);
     try {
-      await work();
+      const exported = await work();
       setOpen(false);
+      if (exported !== false) requestDonatePrompt();
     } catch {
       toast.error("Could not export that file.");
     } finally {
@@ -71,7 +73,7 @@ export function ExportMenu() {
     run("cover", async () => {
       if (!coverLetter.trim()) {
         toast.error("Write a cover letter in chat first.");
-        return;
+        return false;
       }
       const [{ pdf }, { CoverLetterPDF }] = await Promise.all([
         import("@react-pdf/renderer"),
@@ -96,6 +98,7 @@ export function ExportMenu() {
     });
     downloadBlob(blob, "my-simple-resume-backup.json");
     setOpen(false);
+    requestDonatePrompt();
   };
 
   return (

@@ -10,6 +10,8 @@ import { ChatMessage } from "@/types/chat";
 import { isResumeEmpty } from "@/lib/normalizeResume";
 import { cn } from "@/lib/utils";
 import { tokensFromUsage, useTokenStore } from "@/store/useTokenStore";
+import { useUserLlmStore } from "@/store/useUserLlmStore";
+import { userLlmPayload } from "@/lib/userLlm";
 
 const STARTERS = [
   "I'm a software engineer with 5 years of experience.",
@@ -37,6 +39,16 @@ export function ChatPanel() {
   const setCoverLetter = useResumeStore((state) => state.setCoverLetter);
   const setPreviewMode = useResumeStore((state) => state.setPreviewMode);
   const addTokens = useTokenStore((state) => state.addTokens);
+  const llmProvider = useUserLlmStore((state) => state.provider);
+  const llmApiKey = useUserLlmStore((state) => state.apiKey);
+  const llmModel = useUserLlmStore((state) => state.model);
+  const llmBaseUrl = useUserLlmStore((state) => state.baseUrl);
+  const llm = userLlmPayload({
+    provider: llmProvider,
+    apiKey: llmApiKey,
+    model: llmModel,
+    baseUrl: llmBaseUrl,
+  });
 
   const [input, setInput] = useState("");
   const [file, setFile] = useState<File | null>(null);
@@ -102,6 +114,7 @@ export function ChatPanel() {
         form.set("template", template);
         form.set("ui", JSON.stringify(ui));
         form.set("coverLetter", coverLetter);
+        if (llm) form.set("llm", JSON.stringify(llm));
         form.set("file", attached);
         response = await fetch("/api/chat", {
           method: "POST",
@@ -117,11 +130,13 @@ export function ChatPanel() {
             template,
             ui,
             coverLetter,
+            ...(llm ? { llm } : {}),
           }),
         });
       }
 
-      const json = (await response.json()) as {
+      const raw = await response.text();
+      let json: {
         reply?: string;
         resume?: typeof data;
         template?: typeof template;
@@ -130,6 +145,13 @@ export function ChatPanel() {
         usage?: unknown;
         error?: string;
       };
+      try {
+        json = JSON.parse(raw) as typeof json;
+      } catch {
+        throw new Error(
+          response.ok ? "Chat failed." : `Chat failed (${response.status}).`,
+        );
+      }
 
       if (!response.ok) {
         throw new Error(json.error || "Chat failed");
@@ -188,10 +210,10 @@ export function ChatPanel() {
               Attach a PDF to import your resume, or ask chat to write a cover
               letter. The preview updates as you chat.
             </p>
-            {configured === false && (
+            {configured === false && !llm && (
               <p className="glass px-4 py-3 text-sm text-destructive">
-                Add OPENAI_API_KEY, GROQ_API_KEY, or OPENROUTER_API_KEY to
-                .env.local and restart the server.
+                Add your own API key with the API button, or set GROQ_API_KEY on
+                the server.
               </p>
             )}
             <div className="flex flex-col gap-2">

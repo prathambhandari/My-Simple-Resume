@@ -3,7 +3,8 @@ import { defaultResumeData } from "@/types/resume";
 import { ChatMessage } from "@/types/chat";
 import { buildAttachmentMessage, buildSystemPrompt } from "@/lib/chatPrompt";
 import { extractAttachmentText } from "@/lib/extractAttachment";
-import { extractJsonObject, getLlmConfig } from "@/lib/llm";
+import { extractJsonObject, getLlmConfig, resolveLlmConfig } from "@/lib/llm";
+import { userOfferedApiKey, sanitizeUserLlm } from "@/lib/userLlm";
 import { isResumeEmpty, normalizeResume, parseTemplate } from "@/lib/normalizeResume";
 import { isValidTemplateId, templateFromUserText } from "@/lib/resumeTemplates";
 import { defaultAppUi } from "@/types/ui";
@@ -17,7 +18,12 @@ function providerName(baseUrl?: string) {
   return "OpenAI";
 }
 
-function providerErrorMessage(status: number, detail: string, baseUrl?: string) {
+function providerErrorMessage(
+  status: number,
+  detail: string,
+  baseUrl?: string,
+  usingUserKey = false,
+) {
   let code = "";
   let message = "";
   try {
@@ -31,18 +37,23 @@ function providerErrorMessage(status: number, detail: string, baseUrl?: string) 
   }
 
   const provider = providerName(baseUrl);
+  const keyHint = usingUserKey
+    ? "Check the key in API settings."
+    : "Check .env and restart the server.";
 
   if (status === 401 || status === 403) {
-    return `The ${provider} API key was rejected. Check .env and restart the server.`;
+    return `The ${provider} API key was rejected. ${keyHint}`;
   }
   if (code === "insufficient_quota" || /quota|billing/i.test(message)) {
     if (provider === "Groq") {
       return "Groq hit a limit. Wait a few seconds and try again.";
     }
-    return `${provider} is out of quota. Try GROQ_API_KEY in .env and restart the server.`;
+    return `${provider} is out of quota. ${usingUserKey ? "Check billing on that account." : "Try GROQ_API_KEY in .env and restart the server."}`;
   }
   if (code === "model_not_found" || /model/i.test(message)) {
-    return "That model is not available on this API key. Set AI_MODEL in .env to a model your account can use.";
+    return usingUserKey
+      ? "That model is not available on this API key. Change the model in API settings."
+      : "That model is not available on this API key. Set AI_MODEL in .env to a model your account can use.";
   }
   if (status === 429) {
     return `${provider} rate-limited the request. Wait a few seconds and try again.`;
@@ -55,22 +66,12 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const config = getLlmConfig();
-  if (!config) {
-    return NextResponse.json(
-      {
-        error:
-          "Add an API key in .env.local to enable chat. Use OPENAI_API_KEY, GROQ_API_KEY, or OPENROUTER_API_KEY, then restart the dev server.",
-      },
-      { status: 503 },
-    );
-  }
-
   let incoming: ChatMessage[] = [];
   let resumeRaw: unknown;
   let templateRaw: unknown;
   let uiRaw: unknown;
   let coverLetterRaw = "";
+  let userLlmRaw: unknown = null;
   let attachment: File | null = null;
 
   const contentType = request.headers.get("content-type") || "";
@@ -86,6 +87,11 @@ export async function POST(request: Request) {
         uiRaw = null;
       }
       coverLetterRaw = String(form.get("coverLetter") || "");
+      try {
+        userLlmRaw = JSON.parse(String(form.get("llm") || "null"));
+      } catch {
+        userLlmRaw = null;
+      }
       const file = form.get("file");
       attachment = file instanceof File && file.size > 0 ? file : null;
     } else {
@@ -95,15 +101,38 @@ export async function POST(request: Request) {
         template?: unknown;
         ui?: unknown;
         coverLetter?: unknown;
+        llm?: unknown;
       };
       incoming = Array.isArray(body.messages) ? body.messages : [];
       resumeRaw = body.resume;
       templateRaw = body.template;
       uiRaw = body.ui;
       coverLetterRaw = typeof body.coverLetter === "string" ? body.coverLetter : "";
+      userLlmRaw = body.llm ?? null;
     }
   } catch {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+  }
+
+  if (userOfferedApiKey(userLlmRaw) && !sanitizeUserLlm(userLlmRaw)) {
+    return NextResponse.json(
+      {
+        error:
+          "That custom API is not valid. Use an https URL, or http://localhost for a local model.",
+      },
+      { status: 400 },
+    );
+  }
+
+  const { config, usingUserKey } = resolveLlmConfig(userLlmRaw);
+  if (!config) {
+    return NextResponse.json(
+      {
+        error:
+          "Add your API key with the API button, or set GROQ_API_KEY, OPENAI_API_KEY, or OPENROUTER_API_KEY on the server.",
+      },
+      { status: 503 },
+    );
   }
 
   const userMessages = incoming
@@ -156,11 +185,18 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Message is required" }, { status: 400 });
   }
 
-  const payload = {
+  const local =
+    config.baseUrl.includes("localhost") || config.baseUrl.includes("127.0.0.1");
+  const payload: {
+    model: string;
+    temperature: number;
+    max_tokens: number;
+    response_format?: { type: "json_object" };
+    messages: Array<{ role: string; content: string }>;
+  } = {
     model: config.model,
     temperature: attachment ? 0.1 : 0.3,
     max_tokens: attachment ? 8192 : 2048,
-    response_format: { type: "json_object" },
     messages: [
       { role: "system", content: buildSystemPrompt(resume, template, {
         importingFile: Boolean(attachment),
@@ -170,15 +206,22 @@ export async function POST(request: Request) {
       ...llmMessages,
     ],
   };
+  if (!local) payload.response_format = { type: "json_object" };
 
   let completion: Response;
   try {
+    const headers: Record<string, string> = {
+      Authorization: `Bearer ${config.apiKey}`,
+      "Content-Type": "application/json",
+    };
+    if (config.baseUrl.includes("openrouter.ai")) {
+      headers["HTTP-Referer"] =
+        request.headers.get("origin") || "http://localhost:3000";
+      headers["X-Title"] = "My Simple Resume";
+    }
     completion = await fetch(`${config.baseUrl}/chat/completions`, {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${config.apiKey}`,
-        "Content-Type": "application/json",
-      },
+      headers,
       body: JSON.stringify(payload),
     });
   } catch {
@@ -191,7 +234,7 @@ export async function POST(request: Request) {
   if (!completion.ok) {
     const detail = await completion.text();
     return NextResponse.json(
-      { error: providerErrorMessage(completion.status, detail, config.baseUrl) },
+      { error: providerErrorMessage(completion.status, detail, config.baseUrl, usingUserKey) },
       { status: 502 },
     );
   }

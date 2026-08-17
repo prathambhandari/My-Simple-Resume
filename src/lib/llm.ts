@@ -1,3 +1,5 @@
+import { sanitizeUserLlm } from "@/lib/userLlm";
+
 export type LlmConfig = {
   apiKey: string;
   baseUrl: string;
@@ -34,6 +36,15 @@ export function getLlmConfig(): LlmConfig | null {
   }
 
   return null;
+}
+
+export function resolveLlmConfig(userRaw: unknown): {
+  config: LlmConfig | null;
+  usingUserKey: boolean;
+} {
+  const user = sanitizeUserLlm(userRaw);
+  if (user) return { config: user, usingUserKey: true };
+  return { config: getLlmConfig(), usingUserKey: false };
 }
 
 export function extractJsonObject(text: string): unknown {
