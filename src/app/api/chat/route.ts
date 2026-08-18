@@ -9,13 +9,7 @@ import { isResumeEmpty, normalizeResume, parseTemplate } from "@/lib/normalizeRe
 import { isValidTemplateId, templateFromUserText } from "@/lib/resumeTemplates";
 import { defaultAppUi } from "@/types/ui";
 import { isAppUiRequest, mergeUi, normalizeUi, uiFromUserText } from "@/lib/normalizeUi";
-import {
-  SETUP_PATH,
-  clientIp,
-  consumeFreeChat,
-  getPoolStatus,
-  poolExhaustedMessage,
-} from "@/lib/tokenPool";
+import { SETUP_PATH } from "@/lib/setup";
 
 export const runtime = "nodejs";
 
@@ -52,10 +46,12 @@ function providerErrorMessage(
     return `The ${provider} API key was rejected. ${keyHint}`;
   }
   if (code === "insufficient_quota" || /quota|billing/i.test(message)) {
-    if (provider === "Groq") {
-      return "Groq hit a limit. Wait a few seconds and try again.";
+    if (usingUserKey) {
+      return provider === "Groq"
+        ? "Groq hit a limit on that key. Wait a bit, or try a different key in API."
+        : `${provider} is out of quota on that key. Check billing on that account.`;
     }
-    return `${provider} is out of quota. ${usingUserKey ? "Check billing on that account." : "Try GROQ_API_KEY in .env and restart the server."}`;
+    return `${provider} hit a usage limit. Add your own free key to keep going — you don't need to know how to code.\n\n${SETUP_PATH}`;
   }
   if (code === "model_not_found" || /model/i.test(message)) {
     return usingUserKey
@@ -63,20 +59,16 @@ function providerErrorMessage(
       : "That model is not available on this API key. Set AI_MODEL in .env to a model your account can use.";
   }
   if (status === 429) {
-    return `${provider} rate-limited the request. Wait a few seconds and try again.`;
+    if (usingUserKey) {
+      return `${provider} rate-limited that key. Wait a few seconds and try again.`;
+    }
+    return `${provider} hit a usage limit. Add your own free key to keep going — you don't need to know how to code.\n\n${SETUP_PATH}`;
   }
   return message.trim() || `${provider} returned an error. Try again in a moment.`;
 }
 
-export async function GET(request: Request) {
-  const pool = await getPoolStatus(clientIp(request));
-  return NextResponse.json({
-    configured: Boolean(getLlmConfig()),
-    pool: {
-      exhausted: pool.exhausted,
-      setupPath: SETUP_PATH,
-    },
-  });
+export async function GET() {
+  return NextResponse.json({ configured: Boolean(getLlmConfig()) });
 }
 
 export async function POST(request: Request) {
@@ -150,20 +142,6 @@ export async function POST(request: Request) {
       },
       { status: 503 },
     );
-  }
-
-  if (!usingUserKey) {
-    const pool = await getPoolStatus(clientIp(request));
-    if (pool.exhausted) {
-      return NextResponse.json(
-        {
-          error: poolExhaustedMessage(),
-          code: "pool_exhausted",
-          setupPath: SETUP_PATH,
-        },
-        { status: 429 },
-      );
-    }
   }
 
   const userMessages = incoming
@@ -264,14 +242,19 @@ export async function POST(request: Request) {
 
   if (!completion.ok) {
     const detail = await completion.text();
-    return NextResponse.json(
-      { error: providerErrorMessage(completion.status, detail, config.baseUrl, usingUserKey) },
-      { status: 502 },
+    const error = providerErrorMessage(
+      completion.status,
+      detail,
+      config.baseUrl,
+      usingUserKey,
     );
-  }
-
-  if (!usingUserKey) {
-    await consumeFreeChat(clientIp(request));
+    const offerSetup = !usingUserKey && error.includes(SETUP_PATH);
+    return NextResponse.json(
+      offerSetup
+        ? { error, code: "need_key", setupPath: SETUP_PATH }
+        : { error },
+      { status: offerSetup ? 429 : 502 },
+    );
   }
 
   const json = (await completion.json()) as {

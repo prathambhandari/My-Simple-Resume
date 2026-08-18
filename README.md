@@ -27,4 +27,4 @@ Open http://localhost:3000
 
 Use **Export → Backup JSON** to move resumes to another computer, then **Import backup**.
 
-Chat can use the server API key for a shared daily pool (about 20 people, 20 messages each). When that runs out, people add their own free key at `/setup`. Anyone who pastes a key in **API** skips the pool.
+If Groq hits a usage limit, people can add their own free key at `/setup` and keep chatting. Anyone who pastes a key in **API** uses that key instead of the server’s.

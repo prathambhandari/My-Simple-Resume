@@ -74,17 +74,15 @@ export function ChatPanel() {
   const [file, setFile] = useState<File | null>(null);
   const [sending, setSending] = useState(false);
   const [configured, setConfigured] = useState<boolean | null>(null);
-  const [poolExhausted, setPoolExhausted] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetch("/api/chat")
       .then((res) => res.json())
-      .then((json: { configured?: boolean; pool?: { exhausted?: boolean } }) => {
-        setConfigured(Boolean(json.configured));
-        setPoolExhausted(Boolean(json.pool?.exhausted));
-      })
+      .then((json: { configured?: boolean }) =>
+        setConfigured(Boolean(json.configured)),
+      )
       .catch(() => setConfigured(false));
   }, []);
 
@@ -178,8 +176,7 @@ export function ChatPanel() {
       }
 
       if (!response.ok) {
-        if (json.code === "pool_exhausted" || json.code === "need_key") {
-          setPoolExhausted(json.code === "pool_exhausted");
+        if (json.code === "need_key" || json.error?.includes(SETUP_PATH)) {
           addMessage({
             id: newId(),
             role: "assistant",
@@ -249,18 +246,6 @@ export function ChatPanel() {
               <p className="glass px-4 py-3 text-sm text-muted-foreground">
                 Chat needs a free key first. You don&apos;t need to know how to
                 code.{" "}
-                <Link
-                  href={SETUP_PATH}
-                  className="font-medium text-primary underline-offset-4 hover:underline"
-                >
-                  Add a free key — it&apos;s easy
-                </Link>
-              </p>
-            )}
-            {configured && poolExhausted && !llm && (
-              <p className="glass px-4 py-3 text-sm text-muted-foreground">
-                Today&apos;s free chats are used up (shared by everyone). You
-                can keep going with your own free key.{" "}
                 <Link
                   href={SETUP_PATH}
                   className="font-medium text-primary underline-offset-4 hover:underline"
