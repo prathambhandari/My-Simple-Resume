@@ -38,12 +38,12 @@ function providerErrorMessage(
   }
 
   const provider = providerName(baseUrl);
-  const keyHint = usingUserKey
-    ? "Check the key in API settings."
-    : "Check .env and restart the server.";
 
   if (status === 401 || status === 403) {
-    return `The ${provider} API key was rejected. ${keyHint}`;
+    if (usingUserKey) {
+      return `That ${provider} key was rejected. Open the API Keys page, copy a new key, and paste it in API.\n\n${SETUP_PATH}`;
+    }
+    return `${provider} is not accepting the app key. Add your own free key to keep chatting — you don't need to know how to code.\n\n${SETUP_PATH}`;
   }
   if (code === "insufficient_quota" || /quota|billing/i.test(message)) {
     if (usingUserKey) {
@@ -248,7 +248,7 @@ export async function POST(request: Request) {
       config.baseUrl,
       usingUserKey,
     );
-    const offerSetup = !usingUserKey && error.includes(SETUP_PATH);
+    const offerSetup = error.includes(SETUP_PATH);
     return NextResponse.json(
       offerSetup
         ? { error, code: "need_key", setupPath: SETUP_PATH }

@@ -28,3 +28,14 @@ export const useUserLlmStore = create<UserLlmState>()(
     { name: "simple-resume-user-llm" },
   ),
 );
+
+export async function waitForUserLlm() {
+  const persistApi = useUserLlmStore.persist;
+  if (persistApi.hasHydrated()) return;
+  await new Promise<void>((resolve) => {
+    const unsub = persistApi.onFinishHydration(() => {
+      unsub();
+      resolve();
+    });
+  });
+}

@@ -11,7 +11,7 @@ import { ChatMessage } from "@/types/chat";
 import { isResumeEmpty } from "@/lib/normalizeResume";
 import { cn } from "@/lib/utils";
 import { tokensFromUsage, useTokenStore } from "@/store/useTokenStore";
-import { useUserLlmStore } from "@/store/useUserLlmStore";
+import { waitForUserLlm, useUserLlmStore } from "@/store/useUserLlmStore";
 import { userLlmPayload } from "@/lib/userLlm";
 
 const STARTERS = [
@@ -124,6 +124,8 @@ export function ChatPanel() {
     setSending(true);
 
     try {
+      await waitForUserLlm();
+      const llmNow = userLlmPayload(useUserLlmStore.getState());
       let response: Response;
       const history = [...messages, userMessage];
 
@@ -134,7 +136,7 @@ export function ChatPanel() {
         form.set("template", template);
         form.set("ui", JSON.stringify(ui));
         form.set("coverLetter", coverLetter);
-        if (llm) form.set("llm", JSON.stringify(llm));
+        if (llmNow) form.set("llm", JSON.stringify(llmNow));
         form.set("file", attached);
         response = await fetch("/api/chat", {
           method: "POST",
@@ -150,7 +152,7 @@ export function ChatPanel() {
             template,
             ui,
             coverLetter,
-            ...(llm ? { llm } : {}),
+            ...(llmNow ? { llm: llmNow } : {}),
           }),
         });
       }
