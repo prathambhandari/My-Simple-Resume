@@ -44,8 +44,7 @@ export default function SetupPage() {
           Keep chatting with a free key
         </h1>
         <p className="mt-3 text-[15px] leading-relaxed text-white/65">
-          This app shares a little free chat each day. When that runs out, you
-          can keep going with your own free Groq key. It takes about two
+          This app can use a free Groq key from you. It takes about two
           minutes. You do not need to know how to code.
         </p>
 

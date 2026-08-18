@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { createPortal } from "react-dom";
 import { Eye, EyeOff, KeyRound, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { LLM_PRESETS, LlmProvider } from "@/lib/userLlm";
+import { SETUP_PATH } from "@/lib/setup";
 import { useUserLlmStore } from "@/store/useUserLlmStore";
 import { cn } from "@/lib/utils";
 
@@ -15,6 +17,24 @@ const PROVIDERS: Array<{ id: LlmProvider; label: string }> = [
   { id: "openrouter", label: "OpenRouter" },
   { id: "custom", label: "Custom" },
 ];
+
+const KEY_PAGES: Record<
+  Exclude<LlmProvider, "custom">,
+  { href: string; label: string }
+> = {
+  groq: {
+    href: "https://console.groq.com/keys",
+    label: "Open Groq API Keys",
+  },
+  openai: {
+    href: "https://platform.openai.com/api-keys",
+    label: "Open OpenAI API Keys",
+  },
+  openrouter: {
+    href: "https://openrouter.ai/settings/keys",
+    label: "Open OpenRouter API Keys",
+  },
+};
 
 export function ApiSettings() {
   const stored = useUserLlmStore();
@@ -140,6 +160,40 @@ export function ApiSettings() {
                     </button>
                   ))}
                 </div>
+
+                {provider === "custom" ? (
+                  <p className="mt-4 text-[12px] leading-relaxed text-white/50">
+                    Paste the key from your own API host into Key below.
+                  </p>
+                ) : (
+                  <p className="mt-4 text-[12px] leading-relaxed text-white/50">
+                    Don&apos;t have a key? You don&apos;t need to know how to
+                    code. Open the API Keys page, click Create, copy the key,
+                    then paste it below.{" "}
+                    <a
+                      href={KEY_PAGES[provider].href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-medium text-primary underline-offset-4 hover:underline"
+                    >
+                      {KEY_PAGES[provider].label}
+                    </a>
+                    {provider === "groq" ? (
+                      <>
+                        {" "}
+                        Or follow{" "}
+                        <Link
+                          href={SETUP_PATH}
+                          className="font-medium text-primary underline-offset-4 hover:underline"
+                          onClick={() => setOpen(false)}
+                        >
+                          easy steps
+                        </Link>
+                        .
+                      </>
+                    ) : null}
+                  </p>
+                )}
 
                 <div className="glass-group mt-5 overflow-hidden rounded-2xl">
                   <label className="glass-group-row grid grid-cols-[52px_minmax(0,1fr)] items-center gap-2 px-3.5 py-2.5">
